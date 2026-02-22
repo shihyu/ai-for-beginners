@@ -1,0 +1,733 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 09: 【day9】 讓電腦了解文字資料 &amp; 使用Pytorch做IMDB影評分析 - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day9-讓電腦了解文字資料--使用pytorch做imdb影評分析"><a class="header" href="#day9-讓電腦了解文字資料--使用pytorch做imdb影評分析">【day9】 讓電腦了解文字資料 &amp; 使用Pytorch做IMDB影評分析</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-13 03:25:54<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10289649">https://ithelp.ithome.com.tw/articles/10289649</a></p>
+</blockquote>
+<hr />
+<h2 id="讓電腦了解文字資料"><a class="header" href="#讓電腦了解文字資料">讓電腦了解文字資料</a></h2>
+<p>在前幾天的課程中，我們學會如何利用opencv讀取圖片與如何讀取股票資料，像這一些純數值的資料只需要處理矩陣維度後，就能放到神經網路中訓練。如果今天的輸入是文字呢?可能有些人想到了，就是使用在第3天使用到的正規化技術<code>one-hot-encoding</code>。可以將一段文字給予他實際的數字編號後透過one-hot-encoding將資料轉換成機器看得懂的方法。</p>
+<p>例如:</p>
+<pre><code>#文字
+text = I am a student
+
+#給予編號
+text_to_int = {I:0, am:1, a:2, student:3}
+text = [text_to_int(i) for i in text]
+
+#one-hot-encoding
+to_categorical(text)
+------------顯示------------
+[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
+</code></pre>
+<p>雖然這種方式電腦會看得懂，但會有兩個問題存在，分別是<code>無法辨別一詞多意</code>與<code>資料量太龐大</code>。<br />
+先來看以下的例子:</p>
+<pre><code>It's so cold, I've caught a cold
+</code></pre>
+<p>我們可以知道第一個cold代表的是寒冷的意思，而第二個cold卻是感冒的意思。若使用one-hot-encoding會把這兩個轉換成相同的list，這代表兩者文字的意思是相同的，這樣訓練效果自然就會很差了。</p>
+<p>再來是資料龐大的問題，一個資料集單中假設含有16000個英文單字，那在訓練時一個單字的矩陣大小就會是(1,16000)，假設有100字就是(100,16000)，光一個100字的文件就足以讓電腦負荷不了，我們昨天實作的圖片一張只有3x32x32，使用這樣的做法訓練一個檔案的時間，就會是昨天訓練大小的520倍!!</p>
+<p>所以為了改善這兩個缺點從而衍生了另一種技術<code>詞嵌入(World Embedding)</code>，這項技術是目前在<code>自然語言處理(Natural Language Processing)</code>當中最重要的技術，我們甚至可以說，<strong>NLP模型基本上就是建立出一個好的embedding結果</strong>，那到底什麼是embedding呢?</p>
+<p>embedding其實只是一個降維的技術，我們可以將一個數值轉換成embedding的格式例如:</p>
+<pre><code>#文字
+text = I am a student
+
+#給予編號
+text_to_int = {I:0, am:1, a:2, student:3}
+text = [text_to_int(i) for i in text]
+#假設embedding輸出是768維我們把I丟入
+print(embedding(text[0]).shape)
+#丟入 I am
+print(embedding(text[0:1]).shape)
+------------顯示------------
+(1,768)
+(2,768)
+</code></pre>
+<p>可以看到不管丟入多少個文字，最後輸出都會是<code>(batch, embedding_size)</code>，通過embedding_size設定陣列大小，且矩陣內的每一個數值都是float，這代表將會有幾千萬種可能性能夠表達各種單字。再來就是可以通過神經網路訓練embedding層，這樣就能使相似的字或句排列在一起。</p>
+<p>實際上是如何做到的呢?假設神經網路架構是使用LSTM，那就會變成使用<code>左邊的文字去預測右邊</code>的文字，或是<code>右邊的文字預測左邊</code>的文字(雙向)，通過神經網路學習大量的資料就可以讓神經網路了解下一個<code>機率最高</code>的文字是什麼。</p>
+<h2 id="imdb影評分析"><a class="header" href="#imdb影評分析">IMDB影評分析</a></h2>
+<p>接下來進入今天的重點IMDB影評分析。IMDB資料集是一個50000筆電影評論的文本資料集(25000筆訓練25000測試)，我們可以通過神經網路的訓練embedding將偏向正面或負面的文字排列在一起，最後通過全連接層完成我們的分類任務</p>
+<p>今天的目錄如下:</p>
+<ul>
+<li>1.函式庫介紹</li>
+<li>2.資料前處理與創建資料集</li>
+<li>3.架構神經網路</li>
+<li>4.訓練神經網路</li>
+</ul>
+<h3 id="函式庫介紹"><a class="header" href="#函式庫介紹">函式庫介紹</a></h3>
+<pre><code>#深度學習函式庫
+import torch
+#神經元架構與損失函數
+import torch.nn as nn
+#優化器
+import torch.optim as opt
+#激勵函數
+import torch.nn.functional as F
+#創建資料集
+from torch.utils.data import Dataset,DataLoader
+
+#系統相關操作
+import os
+#正規化表達操作
+import re
+#array操作
+import numpy as np
+#進度條
+from tqdm import tqdm
+#切割資料用
+import torch.utils.data as data
+#excel相關操作
+import pandas as pd
+</code></pre>
+<h3 id="資料前處理與創建資料集"><a class="header" href="#資料前處理與創建資料集">資料前處理與創建資料集</a></h3>
+<p>在pytorch當創建資料集的方式都大同小異，只差在該如何對資料做前處理，而在NLP中需要經過相當多的資料轉換才能夠放入神經網路做訓練。</p>
+<p>首先IMDB的資料集可以使用函式庫輕鬆的取得，但我非常不推薦這一種方式。</p>
+<pre><code># import datasets
+from torchtext.datasets import IMDB
+
+train_iter = IMDB(split='train')
+
+def tokenize(label, line):
+    return line.split()
+
+tokens = []
+for label, line in train_iter:
+    tokens += tokenize(label, line)
+</code></pre>
+<p>原因也很簡單，在訓練自己的資料集時不可能會用到這一個函式庫，若是在練習的時候都是使用這種方式呼叫檔案，那麼就算學會了如何架構神經網路與資料集，卻不了解這資料的型態與讀取方式就有點本末倒置了。所以在<a href="https://ithelp.ithome.com.tw/articles/10289155">【day7】解析gz檔案 &amp; 使用Pytorch做CIFAR10影像辨識 (上)</a>時教了一些關於解析檔案的技術，藉由這種方式熟悉資料的組成，使程式能夠貼近實際的應用。</p>
+<p>不過今天就不先從官方網站下載後解析gz檔開始了(有興趣的可以看我第7天的教學自行解析看看)，而是使用CSV檔的方式(NLP的資料大多是CSV檔案)，首先我們先到google dataset下載別人解析好的IMDB的影評資料<a href="https://datasetsearch.research.google.com/search?src=0&amp;query=IMDB&amp;docid=L2cvMTFqY2swejhobA%3D%3D">點我下載</a>這樣就可以來進入文字前處理的部分了。</p>
+<p>為了不讓不相關的文字影響到我們訓練的效果，所以我們需要先將文字做前處理，我們在IMDB數據集當中有許多的html tag()、單一英文字母(a、b、c)、標點符號(@#$%)，我們可以re正規表達式移除這些文字。</p>
+<pre><code>def preprocess_text(self,sentence):
+        #移除html tag
+        sentence = re.sub(r'&lt;[^&gt;]+&gt;',' ',sentence)
+        #刪除標點符號與數字
+        sentence = re.sub('[^a-zA-Z]', ' ', sentence)
+        #刪除單個英文單字
+        sentence = re.sub(r"\s+[a-zA-Z]\s+", ' ', sentence)
+        #刪除多個空格
+        sentence = re.sub(r'\s+', ' ', sentence)
+        
+        #轉小寫
+        return sentence.lower()
+</code></pre>
+<p>在這邊為了方便處理我們將文字多餘的空格刪除掉，只留下最後一個空格當作split()的參數來切割文字，最後再統一文字把文字都轉成小寫。</p>
+<p>在NLP中可以把單字叫做<code>令牌(Token)</code>、解析token的東西叫做<code>令牌解析器(Tokenize)</code>，我們需要將token通過tokenize轉換成數字才能放入embedding層作訓練，並且需要固定輸入的大小在NLP中最常做的事情就是截長補短，對短的資料作zero padding，所以我們要寫一個能夠找到所有的token後創立tokenize並找到我們文本的最大長度的function。</p>
+<pre><code>def get_token2num_maxlen(self, reviews):
+        token = []
+        for review in reviews:
+            #將每筆資料做資料前處理後通過split(' ')把文字存成list
+            review = self.preprocess_text(review)
+            token += review.split(' ')
+            
+        #利用set()回傳一個聯集，並且通過迴圈創建一個文字對應的dict方便轉換
+        #list(set(token))是包含著我們文本裡面的所有文字資料的聯集
+        #這邊要注意開頭是1，0通常會作為padding token
+        token_to_num = {data:cnt for cnt,data in enumerate(list(set(token)),1)}
+        
+        num = []
+        max_len = 0 
+        for review in reviews:
+            review = self.preprocess_text(review)
+            tmp = []
+            for token in review.split(' '):
+                #將文字轉成數字
+                tmp.append(token_to_num[token])
+                
+            #找最大值
+            if len(tmp) &gt; max_len:
+                max_len = len(tmp)
+            num.append(tmp)
+           
+        return num, max_len
+</code></pre>
+<p>接下來我們把程式組合起來後創建我們的資料集</p>
+<pre><code>class IMDB(Dataset):
+    def __init__(self, data):
+        self.data = []
+        #讀取文本資料
+        reviews = data['review'].tolist()
+        #讀取label
+        sentiments = data['sentiment'].tolist()
+        
+        #將文字轉換成數字並且回傳最大文字上限作為padding的根據
+        reviews, max_len = self.get_token2num_maxlen(reviews)
+        
+        #GPU不好的可以直接設定數值
+        #max_len = 500
+        
+        for review, sentiment in zip(reviews,sentiments):
+            #防止文字維度大小不同需要做zero padding
+            if max_len &gt; len(review):
+                padding_cnt = max_len - len(review)
+                review += padding_cnt * [0]
+            else:
+                review = review[:max_len]
+                
+            #判斷label
+            if sentiment == 'positive':
+                label = 1
+            else:
+                label = 0
+                
+            #創建訓練資料
+            self.data.append([review,label])
+
+    def __getitem__(self,index):
+        datas = torch.tensor(self.data[index][0])
+        labels = torch.tensor(self.data[index][1])
+        
+        return datas, labels
+    
+    def __len__(self):
+    
+        return len(self.data)
+        
+    def preprocess_text(self,sentence):
+        #移除html tag
+        sentence = re.sub(r'&lt;[^&gt;]+&gt;',' ',sentence)
+        #刪除標點符號與數字
+        sentence = re.sub('[^a-zA-Z]', ' ', sentence)
+        #刪除單個英文單字
+        sentence = re.sub(r"\s+[a-zA-Z]\s+", ' ', sentence)
+        #刪除多個空格
+        sentence = re.sub(r'\s+', ' ', sentence)
+    
+        return sentence.lower()
+    
+    
+    def get_token2num_maxlen(self, reviews):
+        token = []
+        for review in reviews:
+            #將每筆資料做資料前處理後通過split(' ')把文字存成list
+            review = self.preprocess_text(review)
+            token += review.split(' ')
+            
+        #利用set()回傳一個聯集，並且通過迴圈創建一個文字對應的dict方便轉換
+        #這邊要注意開頭是1，0通常會作為padding token
+        token_to_num = {data:cnt for cnt,data in enumerate(list(set(token)),1)}
+        
+        num = []
+        max_len = 0 
+        for review in reviews:
+            review = self.preprocess_text(review)
+            tmp = []
+            for token in review.split(' '):
+                #將文字轉成數字
+                tmp.append(token_to_num[token])
+                
+            #找最大值
+            if len(tmp) &gt; max_len:
+                max_len = len(tmp)
+            num.append(tmp)
+           
+        return num,max_len
+</code></pre>
+<h3 id="架構神經網路"><a class="header" href="#架構神經網路">架構神經網路</a></h3>
+<p>今天神經網路的架構如下</p>
+<pre><code>embedding-&gt;LSTM層-&gt;全連接層-&gt;全連接層1
+</code></pre>
+<p>我們先看到embedding的官方敘述</p>
+<blockquote>
+<p>torch.nn.Embedding(num_embeddings, embedding_dim, padding_idx=None, max_norm=None, norm_type=2.0, scale_grad_by_freq=False, sparse=False, _weight=None, device=None, dtype=None)</p>
+</blockquote>
+<p>在這邊只需要輸入兩個參數<code>num_embeddings</code>與<code>embedding_dim</code>，num_embeddings是前面所創立token的大小，embedding_dim則是我們要的輸出大小，這邊要注意embedding_dim太大會導致無法有效的訓練資料，太小則會導致訊息流失。</p>
+<pre><code>self.embedding = nn.Embedding(127561,  self.embedding_dim)
+</code></pre>
+<p>接下來要了解LSTM層，如果有不太了解的地方建議先觀看<a href="https://ithelp.ithome.com.tw/articles/10288835">【day5】爬蟲與股票預測-長短期記憶模型(Long short-term memory) (上)</a>。</p>
+<p>因為LSTM的官方文件有太多東西需要知道了<a href="https://pytorch.org/docs/stable/generated/torch.nn.LSTM.html">官方文件</a>，<br />
+這邊我先整理出來一些參數<code>LSTM(input_size, Hidden_state, Num_layer, Bidirectional=True)</code>接下來我來說明一下這些參數的作用。</p>
+<p><code>Bidirectional</code>:在這一層當中最好理解的參數就是他了，這個參數代表的是神經網路是否為雙向網路，當這個參數為True的時候就能從兩個方向(左到右、右到左)傳遞最後在拼接兩方向的資訊。</p>
+<p><code>Num_layer</code>:在我們第5天的課程內知道LSTM透過H傳遞每一節點的資料，而這個參數就是H的數量，數量的方向非常值觀一個方向為1，兩個方向為2。</p>
+<p><code>Hidden_state</code>:這個參數是指H的大小，若大小太大會影響訓練，太小則會丟失太多資訊</p>
+<p><code>input_size</code>:這個參數在LSTM中是最難理解且最複雜的參數了，我們在第5天提到LSTM每一層的輸入是X與H並通過<code>狀態保存層(C)</code>決定輸出，這在input_size中代表什麼意思呢?這代表我們需要定義X、H、C的維度，因為我們每一個LSTM節點都需要使用到這些，所以input_size在程式中到底長什麼樣子呢?答案就是</p>
+<pre><code>((seq_len, batch, input_size), #X
+(num_layers * input_size, batch, hidden_size),#H
+(num_layers * input_size, batch, hidden_size))#C
+</code></pre>
+<p>在這裡突然一次定義了一大堆的狀態是不是頭都花了呢?現在讓我來把整個架構重新整理一下。</p>
+<p>X:首先seq_len就是定義的token大小、batch是資料量大小，input_size則是上層網路的輸出也就是embedding_dim。這跟CNN網路基本上是一樣的道理。<br />
+名稱|LSTM | CNN<br />
+------------- | -------------<br />
+in_channels|seq_len | RGB<br />
+資料大小|batch | batch<br />
+輸入|上層網路的輸出|上層網路的輸出</p>
+<p>H &amp; C:我們知道hidden_state(H)是上一節點的輸出，X是輸入，C是狀態保存層所保留的資訊，這邊快速的定義他們之間的關係。</p>
+<div class="table-wrapper"><table><thead><tr><th>名稱</th><th>輸入</th></tr></thead><tbody>
+<tr><td>H</td><td>C與X</td></tr>
+<tr><td>C</td><td>H與X</td></tr>
+<tr><td>X</td><td>上層網路的輸出</td></tr>
+</tbody></table>
+</div>
+<p>到這邊我們有沒有發現H與C都需要通過X來計算，所以我們可以知道H與C的輸入，就是X的大小，也就是embedding_dim，而我們的神經是雙向的所以num_layer = 2 ，所以我們會得到輸入大小是2 x embedding_dim。</p>
+<p>到這邊是不是了解LSTM在幹嘛了，那我們開始架構神經網路吧</p>
+<pre><code>def __init__(self, embedding_dim, hidden_size, num_layer):
+        super().__init__()
+        #embedding輸出大小
+        self.embedding_dim = embedding_dim
+        #hidden_state大小
+        self.hidden_size = hidden_size
+        #雙向為2單向為1
+        self.num_layer = num_layer
+        
+        #token大小,輸出
+        self.embedding = nn.Embedding(127561,  self.embedding_dim)
+        
+        #上層輸入大小,hidden state大小,單為1雙為2,單向還是雙向
+        self.lstm =nn.LSTM(self.embedding_dim, self.hidden_size, self.num_layer, bidirectional = True)
+        #最後輸出的結果為最後一個狀態的hidden_size * num_layer * 2為最後一個為度長度
+        self.fc = nn.Linear(hidden_size *  self.num_layer * 2, 20)
+        self.fc1 = nn.Linear(20, 2)
+
+def forward(self, x):
+        #將文字降維
+        x = self.embedding(x)
+        
+        #此時狀態為(batch_size, token大小, embedding_dim)我們需要將他轉成LSTM格式
+        x = x.permute([1,0,2])
+        
+        #(token大小,batch_size,embedding_dim)
+        states, hidden  = self.lstm(x, None)#H跟C設定成0
+        
+        #因為是雙向網路所以需要找到從左到右(最後一筆資料)的狀態與從右到左(第一筆資料)
+        x = torch.cat((states[0], states[-1]), 1)
+        #全連接層
+        x = F.relu(self.fc(x))
+        x = F.relu(self.fc1(x))
+        #二分法所以使用sigmoid
+        x = F.sigmoid(x)
+        return x
+</code></pre>
+<h3 id="訓練神經網路"><a class="header" href="#訓練神經網路">訓練神經網路</a></h3>
+<p>終於到這一步了，今天在這步驟完全跟昨天的方式一樣我們直接複製貼上就好</p>
+<pre><code>def train(train_loader,test_loader, model ,optimizer, criterion):
+    epochs = 10
+    for epoch in range(epochs):
+        train_loss = 0
+        train_acc = 0
+        train = tqdm(train_loader)
+      
+        model.train()
+        for cnt,(data,label) in enumerate(train, 1):
+            data,label = data.cuda() ,label.cuda()
+            outputs = model(data)
+            loss = criterion(outputs, label)
+            _,predict_label = torch.max(outputs, 1)
+            
+            optimizer.zero_grad()           
+            loss.backward()
+            optimizer.step()
+
+            train_loss += loss.item()
+            train_acc += (predict_label==label).sum()
+            train.set_description(f'train Epoch {epoch}')
+            train.set_postfix({'loss':float(train_loss)/cnt,'acc': float(train_acc)/cnt})
+           
+            
+        model.eval()
+        test = tqdm(test_loader)
+        test_acc = 0
+        for cnt,(data,label) in enumerate(test, 1):
+            data,label = data.cuda() ,label.cuda()
+            outputs = model(data)
+            _,predict_label = torch.max(outputs, 1)
+            test_acc += (predict_label==label).sum()
+            test.set_description(f'test Epoch {epoch}
+-------------------------------------------顯示-------------------------------------------
+train Epoch 4: 100%|████████████████████████████████████████████| 313/313 [00:18&lt;00:00, 17.03it/s, loss=0.533, acc=95.1]
+test Epoch 4: 100%|██████████████████████████████████████████████████████████| 79/79 [00:01&lt;00:00, 73.57it/s, acc=93.2]
+</code></pre>
+<h2 id="完整程式碼"><a class="header" href="#完整程式碼">完整程式碼</a></h2>
+<pre><code>import torch
+import torch.nn as nn
+import torch.optim as opt
+import torch.nn.functional as F
+from torch.utils.data import Dataset,DataLoader
+
+import os
+import re
+import numpy as np
+from tqdm import tqdm
+import torch.utils.data as data
+import pandas as pd
+
+os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
+
+class IMDB(Dataset):
+    def __init__(self, data, max_len =500):
+        self.data = []
+        reviews = data['review'].tolist()
+        sentiments = data['sentiment'].tolist()
+        reviews, max_len = self.get_token2num_maxlen(reviews)
+        max_len = 500
+        
+        for review, sentiment in zip(reviews,sentiments):
+            if max_len &gt; len(review):
+                padding_cnt = max_len - len(review)
+                review += padding_cnt * [0]
+            else:
+                review = review[:max_len]
+
+            if sentiment == 'positive':
+                label = 1
+            else:
+                label = 0
+
+            self.data.append([review,label])
+
+    def __getitem__(self,index):
+        datas = torch.tensor(self.data[index][0])
+        labels = torch.tensor(self.data[index][1])
+        
+        return datas, labels
+    
+    def __len__(self):
+    
+        return len(self.data)
+        
+    def preprocess_text(self,sentence):
+        #移除html tag
+        sentence = re.sub(r'&lt;[^&gt;]+&gt;',' ',sentence)
+        #刪除標點符號與數字
+        sentence = re.sub('[^a-zA-Z]', ' ', sentence)
+        #刪除單個英文單字
+        sentence = re.sub(r"\s+[a-zA-Z]\s+", ' ', sentence)
+        #刪除多個空格
+        sentence = re.sub(r'\s+', ' ', sentence)
+    
+        return sentence.lower()
+    
+    
+    def get_token2num_maxlen(self, reviews,enable=True):
+        token = []
+        for review in reviews:
+            review = self.preprocess_text(review)
+            token += review.split(' ')
+        
+        token_to_num = {data:cnt for cnt,data in enumerate(list(set(token)),1)}
+         
+        num = []
+        max_len = 0 
+        for review in reviews:
+            review = self.preprocess_text(review)
+            tmp = []
+            for token in review.split(' '):
+                tmp.append(token_to_num[token])
+                
+            if len(tmp) &gt; max_len:
+                max_len = len(tmp)
+            num.append(tmp)
+            
+                
+        return num, max_len
+        
+       
+        
+class RNN(nn.Module):
+    def __init__(self, embedding_dim, hidden_size, num_layer):
+        super().__init__()
+        self.embedding_dim = embedding_dim
+        self.hidden_size = hidden_size
+        self.num_layer = num_layer
+        
+        self.embedding = nn.Embedding(127561,  self.embedding_dim)
+        self.lstm =nn.LSTM(self.embedding_dim, self.hidden_size, self.num_layer, bidirectional = True)
+        self.fc = nn.Linear(hidden_size * 4, 20)
+        self.fc1 = nn.Linear(20, 2)
+        
+    def forward(self, x):
+        x = self.embedding(x)
+        states, hidden  = self.lstm(x.permute([1,0,2]), None)
+        x = torch.cat((states[0], states[-1]), 1)
+        x = F.relu(self.fc(x))
+        x = F.relu(self.fc1(x))
+        x = F.sigmoid(x)
+        return x
+        
+   
+
+def train(train_loader,test_loader, model ,optimizer, criterion):
+    epochs = 10
+    for epoch in range(epochs):
+        train_loss = 0
+        train_acc = 0
+        train = tqdm(train_loader)
+      
+        model.train()
+        for cnt,(data,label) in enumerate(train, 1):
+            data,label = data.cuda() ,label.cuda()
+            outputs = model(data)
+            loss = criterion(outputs, label)
+            _,predict_label = torch.max(outputs, 1)
+            
+            optimizer.zero_grad()           
+            loss.backward()
+            optimizer.step()
+
+            train_loss += loss.item()
+            train_acc += (predict_label==label).sum()
+            train.set_description(f'train Epoch {epoch}')
+            train.set_postfix({'loss':float(train_loss)/cnt,'acc': float(train_acc)/cnt})
+           
+            
+        model.eval()
+        test = tqdm(test_loader)
+        test_acc = 0
+        for cnt,(data,label) in enumerate(test, 1):
+            data,label = data.cuda() ,label.cuda()
+            outputs = model(data)
+            _,predict_label = torch.max(outputs, 1)
+            test_acc += (predict_label==label).sum()
+            test.set_description(f'test Epoch {epoch}')
+            test.set_postfix({'acc': float(test_acc)/cnt})
+
+           
+
+df = pd.read_csv('IMDB Dataset.csv')
+
+dataset = IMDB(df)
+train_set_size = int(len(dataset)*0.8)
+test_set_size = len(dataset) - train_set_size
+train_set, test_set = data.random_split(dataset, [train_set_size, test_set_size])
+train_loader = DataLoader(train_set, batch_size = 128,shuffle = True, num_workers = 0)
+test_loader = DataLoader(test_set, batch_size = 128, shuffle = True, num_workers = 0)
+
+model = RNN(embedding_dim = 256, hidden_size = 64, num_layer = 2).cuda()
+optimizer = opt.Adam(model.parameters())
+criterion = nn.CrossEntropyLoss()
+train(train_loader, test_loader, model,optimizer,criterion)
+</code></pre>
+<p>這幾天有沒有感覺到資訊量越來越多了，這幾天的pytorch內容盡量反覆閱讀與實作才能夠真正了解網路架構，所以我們明天就來學一些簡單東西來休息一下吧</p>
+<p>課程中的程式碼都能從我的github專案中看到<br />
+<a href="https://github.com/AUSTIN2526/learn-AI-in-30-days">https://github.com/AUSTIN2526/learn-AI-in-30-days</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day08.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day10.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day08.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day10.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

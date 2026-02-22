@@ -1,0 +1,498 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 02: 【day2】python基礎語法 - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day2python基礎語法"><a class="header" href="#day2python基礎語法">【day2】python基礎語法</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-06 00:24:36<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10288075">https://ithelp.ithome.com.tw/articles/10288075</a></p>
+</blockquote>
+<hr />
+<blockquote>
+<p>在開始AI課程之前，我們要先學會如何使用python<br />
+所以會來教點基礎語法<br />
+今天的課程會有點難度，建議反覆閱讀並且通過實作來加深印象</p>
+</blockquote>
+<h2 id="0了解變數與資料型態"><a class="header" href="#0了解變數與資料型態">0.了解變數與資料型態</a></h2>
+<p>在開始之前我們要先知道如何宣告變數(Variable)與它的資料型態(Type)。</p>
+<h3 id="intfloatstr"><a class="header" href="#intfloatstr">int、float、str</a></h3>
+<p>int:只要是數字在程式中就會被當作是int像是:0、1、1000、-1都是屬於int的類型。</p>
+<pre><code>a = 0    #int
+</code></pre>
+<p>float:只要將數字加上.像是0.0、0.1、1.2534都是屬於float。</p>
+<pre><code>a = 0.0  #float
+</code></pre>
+<p>在兩者之間加入'' or ""就會是屬於str。</p>
+<pre><code>a = '0'  #str
+</code></pre>
+<p>在以上的範例中a就是我們的變數，而這個變數的型態會隨者我賦予它的值去變動它。</p>
+<h3 id="運算規則"><a class="header" href="#運算規則">運算規則</a></h3>
+<p>在這些資料型態裡面當然有一些運算規則。<br />
+例如:int與float可以互相加減乘除、str只能與int相乘</p>
+<pre><code>a = 0.1 #float
+b = 1   #int
+print(a+b)
+-------顯示--------
+1.1
+</code></pre>
+<pre><code>a='0'
+b = 2
+print(a*b)
+-------顯示--------
+'00'
+</code></pre>
+<h3 id="listdicttuple"><a class="header" href="#listdicttuple">List、Dict、Tuple</a></h3>
+<p>如果有一大筆的資料難道要一個一個宣告變數嗎?當然還有幾種資料型態。</p>
+<h4 id="list資料1資料2"><a class="header" href="#list資料1資料2">list[資料1,資料2]:</a></h4>
+<pre><code>list = [1,2,3,4]
+print(list[0])
+-------顯示--------
+1
+</code></pre>
+<p>當我們有很多資料時可以放入到一個list當中，若有需要的資料可以直接輸入變數名稱[index]就能呼叫出裡面的資料。</p>
+<h4 id="dict資料的索引1資料的值1資料的索引2資料的值2"><a class="header" href="#dict資料的索引1資料的值1資料的索引2資料的值2">dict{'資料的索引1':資料的值1,'資料的索引2':資料的值2}:</a></h4>
+<pre><code>dict = {'a':0,'b':1}
+print(dict['a'])
+-------顯示--------
+0
+</code></pre>
+<p>dict則是可以依照索引值去尋找你所想要的數值。</p>
+<h4 id="tuple資料1資料2"><a class="header" href="#tuple資料1資料2">tuple(資料1,資料2):</a></h4>
+<pre><code>tuple = (1,2,3,4)
+print(tuple[0])
+-------顯示--------
+1
+</code></pre>
+<p>我們可以看到tuple的效果與list相同，但實際上卻是有差別的，我們用以下程式做個實驗。</p>
+<pre><code>tuple = (1,2,3,4)
+tuple[0]=0
+-------顯示--------
+TypeError: 'tuple' object does not support item assignment
+</code></pre>
+<pre><code>list = [1,2,3,4]
+list[0]=0
+print(list)
+-------顯示--------
+[0,2,3,4]
+</code></pre>
+<p>這一些都搞懂之後我們就來開始一些python的基礎操作吧!!</p>
+<h2 id="1基礎操作"><a class="header" href="#1基礎操作">1.基礎操作</a></h2>
+<h3 id="print"><a class="header" href="#print">print</a></h3>
+<blockquote>
+<p>print (* objects , sep = ' ' , end = '\n' , file = sys . stdout , flush = False)</p>
+</blockquote>
+<p>當我們要顯示文字或變數內容時，可以使用print()顯示結果。</p>
+<pre><code>print("hello world")
+-------顯示--------
+hello world
+</code></pre>
+<h3 id="type"><a class="header" href="#type">type</a></h3>
+<blockquote>
+<p>type(object)</p>
+</blockquote>
+<p>若是我們不知道一個變數的型態，可以使用type()查詢。</p>
+<pre><code>b = 1
+print(type(b))
+-------顯示--------
+int
+</code></pre>
+<h3 id="input"><a class="header" href="#input">input</a></h3>
+<blockquote>
+<p>input([prompt])</p>
+</blockquote>
+<p>當我們程式需要一些外部輸入的時候我們可以使用input()。</p>
+<pre><code>n = input('這裡可以輸入你想要的文字:') #輸入123123
+print(n)
+-------顯示--------
+這裡可以輸入你想要的文字:123123
+123123
+</code></pre>
+<h3 id="intfloatstr-1"><a class="header" href="#intfloatstr-1">int()、float()、str()</a></h3>
+<p>如果把上面的程式修改成做數值相加就會發現系統跳出錯誤提示。</p>
+<pre><code>n = input('這裡可以輸入你想要的文字:') #輸入123123
+a = 123456
+print(n+a)
+-------顯示--------
+TypeError: can only concatenate str (not "int") to str
+</code></pre>
+<p>會發生這樣的問題是因為input回傳是str而不是int與float，所以我們需會用到int()、float()、str()把數值轉型。</p>
+<pre><code>n = int(input('這裡可以輸入你想要的文字:')) #輸入123123
+a = 123456
+print(n+a)
+-------顯示--------
+246579
+</code></pre>
+<h2 id="2邏輯判斷ifelseforwhile"><a class="header" href="#2邏輯判斷ifelseforwhile">2.邏輯判斷(if...else、for、while)</a></h2>
+<h3 id="ifelse"><a class="header" href="#ifelse">if..else</a></h3>
+<p>從這邊開始就會有一些難度了，不過也別擔心，if...else我們每天也都會用到，像是今天如果下雨我就不出門，只是將這種邏輯讓程式看得懂而已，以下是程式的用法。</p>
+<pre><code>if 條件1:
+    執行的動作
+elif 條件2:
+    執行的動作
+else:
+    執行的動作
+</code></pre>
+<p>這樣講可能會比較難理解，我舉個例子來說。<br />
+例如:成績80以上的人顯示好棒、60以上的人顯示不錯、60以下的人顯示再加強，用程式就可以這樣子表達:</p>
+<pre><code>if score &gt;=80:
+    print('好棒')
+elif score &gt;=60:
+    print('不錯')
+else:
+    print('再加強')
+</code></pre>
+<h3 id="for"><a class="header" href="#for">for</a></h3>
+<blockquote>
+<p>range(start, stop[, step])</p>
+</blockquote>
+<p>當我們需要做重複的事情的時候我們就可以使用for 變數名稱 in range(範圍)。<br />
+例如:一班10個學生，成績80以上的人顯示好棒、60以上的人顯示不錯、60以下的人顯示再加強。</p>
+<pre><code>score = [80,99,10,20,50,60,70,30,20,35]
+for i in range(10):
+    if score[i] &gt;=80:
+        print('好棒')
+    elif score[i] &gt;=60:
+        print('不錯')
+    else:
+        print('再加強')
+</code></pre>
+<p>不過像上述的寫法會有一種問題，假如今天有轉走了一位學生但範圍還是10，那麼程式執行到最後時就會告知你index out range。</p>
+<pre><code>score = [80,99,10,20,50,60,70,30,20]
+for i in range(10):
+    if score[i] &gt;=80:
+        print('好棒')
+    elif score[i] &gt;=60:
+        print('不錯')
+    else:
+        print('再加強')
+-------顯示--------
+好棒
+好棒
+再加強
+再加強
+再加強
+不錯
+不錯
+再加強
+再加強
+IndexError: list index out of range
+</code></pre>
+<p>所以我們可以將寫法改變成range(len(score))。</p>
+<pre><code>score = [80,99,10,20,50,60,70,30,20]
+for i in range(len(score)):#len()可以取得str或list的大小
+    if score[i] &gt;=80:
+        print('好棒')
+    elif score[i] &gt;=60:
+        print('不錯')
+    else:
+        print('再加強')
+</code></pre>
+<p>或直接使用score做迴圈。</p>
+<pre><code>score = [80,99,10,20,50,60,70,30,20]
+for i in score:#直接拿score做迴圈條件
+    if i &gt;=80:
+        print('好棒')
+    elif i &gt;=60:
+        print('不錯')
+    else:
+        print('再加強')
+</code></pre>
+<h3 id="while"><a class="header" href="#while">while</a></h3>
+<p>前面說到的for是因為能知道這個迴圈會做幾次，如果不知道要做多少次呢?<br />
+舉一個例子，像是寫一個猜數字的小遊戲</p>
+<pre><code>n = int(input('輸入數字:'))
+num = 80
+while(num != n):#未達成條件繼續迴圈
+    print('猜錯了!!')
+</code></pre>
+<p>我們也可以將while寫成永久迴圈，並且用if控制跳脫迴圈。</p>
+<pre><code>n = int(input('輸入數字:'))
+num = 80
+while(True):#永遠不會停止
+    if num == n:.
+        break #break為中斷迴圈
+    print('猜錯了!!')
+</code></pre>
+<p>以上就是迴圈的基本應用。</p>
+<h2 id="3進階教學"><a class="header" href="#3進階教學">3.進階教學</a></h2>
+<h3 id="function"><a class="header" href="#function">function</a></h3>
+<p>當我們在寫一個專案的時候，常常會為了方便管理而將一個功能寫在其他地方。<br />
+這時就會去定義def function名稱(變數)。<br />
+例子:寫一個將兩數相加的function</p>
+<pre><code>def add_num(a,b):
+    return a+b
+    
+num = add_num(1,2)
+print(num)
+-------顯示--------
+3
+</code></pre>
+<p>但要注意function裡面的變數並不是全域變數，但list、dict、tuple會是為全域變數。<br />
+例子:</p>
+<pre><code>def add_num():
+    result = list[0]+list[1] #list為全域變數不需傳入function
+    return result #result則不是全域變數只存在於這個function中
+list = [1,2]
+num = add_num()
+print(num)
+print(result)
+-------顯示--------
+3
+NameError: name 'result' is not defined
+</code></pre>
+<h3 id="class"><a class="header" href="#class">class</a></h3>
+<p>這個是資料結構的一些技術我盡量簡單的解釋，因為在AI方面這比較不重要，所以我只會提到些基礎的用法，若有興趣的人可以再去查詢這方面的相關知識</p>
+<pre><code>class Student:
+    # 建構式(Constructor)想放入class的資料會通過__init__建立(放入austin與100到這)
+    def __init__(self, name, score):
+        self.name = name   #屬性(Attribute):可以使數值在各function之中傳遞
+        self.score = score  
+        
+    # 方法(Method)實際執行動作的地方
+    def print_info(self):
+        print(f"{self.name}:{self.score}")
+
+people = Student('austin',100)#這邊只會執行__init__
+people.print_info()#這邊才是使用print_info這個function
+-------顯示--------
+austin:100
+</code></pre>
+<ul>
+<li>類別(Class):在例子中class就是Student</li>
+<li>物件(Object):在例子中Object就是people</li>
+<li>屬性(Attribute):在例子中Attribute就是</li>
+<li>建構式(Constructor):在例子中Constructor就是def <strong>init</strong>(self, name, score)</li>
+<li>方法(Method):在例子中Method就是def print_info(self)</li>
+</ul>
+<p>用一句來講就是:將變數指定為物件(Object)，並且使用建構式(Constructor)賦予屬性(Attribute)，最後用方法(Method)來達成動作</p>
+<p>那今天就到這裡，明天會正式講解AI相關技術，謝謝大家</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day01.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day03.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day01.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day03.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

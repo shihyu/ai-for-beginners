@@ -1,0 +1,23 @@
+/* 讓圖片不超出頁面寬度 */
+.content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1em auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 程式碼區塊 */
+.content pre {
+    border-radius: 6px;
+}
+
+/* 引用區塊樣式 */
+.content blockquote {
+    border-left: 4px solid #3b82f6;
+    background: #eff6ff;
+    padding: 0.5em 1em;
+    border-radius: 0 4px 4px 0;
+}

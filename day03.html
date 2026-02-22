@@ -1,0 +1,448 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 03: 【day3】來辨識圖像-深度神經網路(Deep Neural Network) - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day3來辨識圖像-深度神經網路deep-neural-network"><a class="header" href="#day3來辨識圖像-深度神經網路deep-neural-network">【day3】來辨識圖像-深度神經網路(Deep Neural Network)</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-07 05:37:00<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10288343">https://ithelp.ithome.com.tw/articles/10288343</a></p>
+</blockquote>
+<hr />
+<h2 id="深度神經網路deep-neural-network"><a class="header" href="#深度神經網路deep-neural-network">深度神經網路(Deep Neural Network)</a></h2>
+<p>在開始寫程式前，先來看一下最基礎的神經網路DNN的架構圖<br />
+<img src="images/201522363e3RYfX39I.jpg" alt="" /></p>
+<blockquote>
+<p>圖片來源:https://www.researchgate.net/figure/Deep-Neural-Network-DNN-example_fig2_341037496</p>
+</blockquote>
+<p>圖片是不是看起來有點複雜，其實概念很的簡單，假設我們有個資料集要辨識4種類型得圖片y1~y4，每張圖片有8個特徵(Feature)x1~x8，那神經網路所扮演的角色就是訓練權重(weight)w1~w8，我們可以把權重當作是每一個特徵的分數，分數越高的結果，代表可能性越大，像是在架構圖中的圖片中我們可以用公式能表達為<code>y = x1w1+x2w2+x3w3+x4w4+x5w5+x6w6+x7w7+x8w8</code>，找到最高分數的y就是可能性最高的結果。</p>
+<p>這樣是不是有一些概念了，接下來開始講解<code>輸入層(input layer)</code>、<code>隱藏層(hidden layer)</code>、<code>輸出層(output layer)</code>的概念。</p>
+<h3 id="輸入層input-layer"><a class="header" href="#輸入層input-layer">輸入層(input layer)</a></h3>
+<p>神經網路的第一層被稱作輸入層，這層取得在外部的資源，像是圖片、文字、音訊、能被接受到的訊息，在這層中不會有任何的公式運算，只是傳送資料至下一層。</p>
+<h3 id="隱藏層hidden-layer"><a class="header" href="#隱藏層hidden-layer">隱藏層(hidden layer)</a></h3>
+<p>隱藏層是在訓練中最重要的一個環節，神經網路就是在這層中學習特徵並產生權重的，一個神經網路至少要有一層隱藏層。</p>
+<h3 id="輸出層output-layer"><a class="header" href="#輸出層output-layer">輸出層(output layer)</a></h3>
+<p>隱藏層會將資料丟給輸出層，這層的輸出大小會根據你所想要的任務而不同，像是辨識貓與狗的圖片(分類任務)輸出層就會是2(只有貓跟狗)，若像是股票預測(回歸)輸出則為1。</p>
+<p>看完以上的敘述後，有沒有發現一個問題，輸出是x1w1+...x8w8那不就會是線性了嗎?為了解決這個問題於是有了激勵函數(activation function)，它能夠使神經網路變成非線性，比較常見的激勵函數有:<code>relu</code>、<code>tanh</code>、<code>softmax</code>、<code>sigmoid</code>等激勵函數，這些函數選用與解說我會在後續的實作課程中講解，這邊先有個概念就好。</p>
+<h2 id="建立環境"><a class="header" href="#建立環境">建立環境</a></h2>
+<p>還記得第一天教的如何安裝函式庫嗎?</p>
+<p>今天會用到的函式庫如下:<br />
+<code>numpy</code>:支援高階大量的維度陣列與矩陣運算，也針對陣列運算提供大量的數學函數函式庫<br />
+<code>tensorflow</code>:深度學習函式庫，在今天只會做為keras的後端並不會實際用到<br />
+<code>keras</code>:能夠串接tensorflow，使其能夠簡易的建立神經網路<br />
+<code>jupyter</code>:Web的互動式計算環境</p>
+<p>那麼我們就開始使用pip安裝這些函式庫吧!!</p>
+<pre><code>pip install tensorflow==2.3.0
+pip install keras==2.3.1
+pip install jupyter
+</code></pre>
+<h2 id="開啟jupyter-notebook"><a class="header" href="#開啟jupyter-notebook">開啟jupyter notebook</a></h2>
+<p>安裝函式庫後，該怎麼開始深度學習的第一支程式呢?</p>
+<p>在這邊我會建議先創立一個資料夾，避免資料會混亂，我們先將資料夾命名為"mnist手寫辨識"。<br />
+<img src="images/201522362qu25Z4v9Z.jpg" alt="" /></p>
+<p>點進去資料夾裡面後按下ALT+D就會就會自動跳到網址列，我們只需要在網址列中輸入cmd。<br />
+<img src="images/201522361KedYw70Fl.jpg" alt="" /></p>
+<p>接下來我們在cmd當中輸入jupyter notebook(注意開啟後cmd不能關掉)。<br />
+<img src="images/201522365Dm4CXaCYr.jpg" alt="" /></p>
+<p>開啟jupyter後點擊右上角的new選擇python3創立檔案。<br />
+<img src="images/20152236q2FJEu4xd3.jpg" alt="" /></p>
+<p>看到這個頁面就代表可以開始寫程式啦~<br />
+<img src="images/20152236LPJYc0eAeQ.jpg" alt="" /></p>
+<h2 id="呼叫函式庫"><a class="header" href="#呼叫函式庫">呼叫函式庫</a></h2>
+<p>首先我們要來學習如何呼叫函式庫</p>
+<p>當我們想使用一個函式庫時只需用</p>
+<pre><code>import XXX(函示庫名稱)
+</code></pre>
+<p>像是要使用numpy，就能寫成</p>
+<pre><code>import numpy
+</code></pre>
+<p>之後就能使用功能了，例如將list轉換成array只需要在函式庫的名稱後面加入.就能使用function</p>
+<pre><code>list = [1,2,3]
+list = numpy.array(list)
+</code></pre>
+<p>但如果今天覺得numpy這個名字太長了就能用以下的寫法</p>
+<pre><code>#import 函示庫 as 簡化的名稱
+import numpy as np
+list = [1,2,3]
+list = np.array(list)
+</code></pre>
+<p>但這樣子import會把函式庫裡面的function通通放到程式裡出來，所以為了節省空間會將一些較常使用的function單獨呼叫</p>
+<pre><code>#from 函示庫 import 功能 as 簡化名稱
+from numpy import array as ar
+list = [1,2,3]
+list = ar(list)
+</code></pre>
+<p>這就是在python呼叫函式庫的辦法，了解之後就開始進入今天的正題的<code>MNIST手寫辨識</code>吧!!</p>
+<h2 id="mnist手寫辨識實作"><a class="header" href="#mnist手寫辨識實作">MNIST手寫辨識實作</a></h2>
+<p>在這邊我們先將程式分為幾個部分:<br />
+1.導入函式庫<br />
+2.資料前處理<br />
+3.模型的建構<br />
+4.模型的訓練</p>
+<h3 id="1導入函式庫"><a class="header" href="#1導入函式庫">1.導入函式庫</a></h3>
+<pre><code>import numpy as np 
+import tensorflow.keras
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Activation
+from tensorflow.keras.utils import to_categorical
+</code></pre>
+<p>函式庫說明:<br />
+1.<code>keras.datasets</code>:包含著一些著名的資料集例如:nmist、IMDB影評<br />
+2.<code>keras.models</code>:架構神經網路<br />
+3.<code>keras.layers</code>:創建神經網路Dense(DNN)、conv2d(CNN)<br />
+4.<code>keras.utils</code>:資料正規化</p>
+<h3 id="2資料前處理data-preprocessing"><a class="header" href="#2資料前處理data-preprocessing">2.資料前處理(Data Preprocessing)</a></h3>
+<p>在資料前處理之前我們先讀取mnist的資料。</p>
+<pre><code>(x_train, y_train), (x_test, y_test) = mnist.load_data()
+</code></pre>
+<blockquote>
+<p>x_train, x_test : uint8 數組表示的灰度圖像，尺寸為(num_samples, 28, 28)。<br />
+y_train, y_test : uint8 數組表示的數字標籤（範圍在0-9 之間的整數），尺寸為(num_samples,)。</p>
+</blockquote>
+<p>拿到資料後先來看一下資料的shape</p>
+<pre><code>print(x_train.shape)
+------顯示------
+(60000, 28, 28)
+</code></pre>
+<p>第一碼60000代表的是資料大小，總共有60000張圖片<br />
+第二碼則是長有28個pixel<br />
+第三碼則是寬有28個pixel</p>
+<p>我們先回到一開始的架構圖，有沒有發現他的輸入是一整排的(一維)，而我們的資料卻是二維，所以要將28x28(2維)的資料變成784(1維)的資料，在這裡我們是用reshape這個function重新list的大小。</p>
+<pre><code>x_train = x_train.reshape(60000, 784)
+x_test = x_test.reshape(10000, 784)
+------顯示------
+(60000, 784)
+</code></pre>
+<p>現在來觀看一下第一筆訓練資料的內容</p>
+<pre><code>print(x_train[0])
+------顯示------
+[....   18  18  18 126 136 175  26 166 255 ...0   0   0   0   0   0   0   0   0]
+</code></pre>
+<p>可以看到裡面有許多數值，這數值代表的是顏色越靠近0的是白色，越靠近255則是黑色，這也就是我們圖片的特徵值。</p>
+<p>但是在神經網路中數值越大收斂越慢，且會受到極端值的影響，使訓練效果不佳，所以在這邊將數值除255讓數值能夠壓縮在0~1之間</p>
+<pre><code>x_train = x_train/255
+x_test = x_test/255
+</code></pre>
+<p>這樣就處理完放入model的圖片資料了。</p>
+<p>為了知道神經網路的準確率，我們需要給圖片一個標籤(Label)，但是機器只會看懂0跟1，所以我們需要把數字正規化，在這邊使用<code>one-hot-encoding</code>作為正規化的方式。</p>
+<pre><code>y_train = to_categorical(y_train)
+y_test = to_categorical(y_test)
+</code></pre>
+<p>假設的label裡面有1與2，那<code>one-hot-encoding</code>就會以位置表達數字的涵義<br />
+例如:label = [1,2] 那1就會被編譯成[1,0]、2就會被編譯成[0,1]</p>
+<p>到這邊我們就完成圖片與標籤的資料前處理了</p>
+<h3 id="3模型的建構"><a class="header" href="#3模型的建構">3.模型的建構</a></h3>
+<p>首先說明一下在本次訓練內用到的激勵函數<code>relu</code>與<code>softmax</code>。</p>
+<p><code>relu</code>:會將0以下的數值通通當作是0，這能夠加強資料的特徵，同時還能加速程式收斂的速度，通常會用於CNN、DNN等架構上。<br />
+<code>softmax</code>:會將數值歸一化，且輸出向量中擁有最大權重的項對應著輸入向量中的最大值，通常會定義在分類任務的輸出層。</p>
+<pre><code># 建立模型
+model = Sequential()
+# 輸入層與隱藏層
+model.add(Dense(units=256,input_dim=784, activation='relu'))
+# 隱藏層
+model.add(Dense(units=128, activation='relu'))
+# 輸出層
+model.add(Dense(units=10,activation='softmax'))
+</code></pre>
+<p>用keras建立模型相當的簡單，只需要將Sequential()宣告給一個變數後就能使用add就能加入層數，程式碼的範例是一個784大小的輸入層，並且有兩層隱藏層大小分別維256與128，最後輸出10個結果(辨識0~9)。</p>
+<h3 id="4模型的訓練"><a class="header" href="#4模型的訓練">4.模型的訓練</a></h3>
+<p>建立模型之後當然是訓練它了，在訓練之前我們要先了解<code>損失函數(Loss Function)</code>與<code>優化器(Optimizer)</code>。</p>
+<p><code>優化器(Optimizer)</code>:我們在國中應該都學過就是微積分找極值，而在深度學習中就是改良找極值的方式去做到最佳化的，我們叫這種方式為<code>梯度下降(Gradient Descent)</code>而這概念則與滑板場相同。想像今天有一個U型滑板場，只要沒有加速最終就會停留在U型的最底部，但若是W型的滑板場就不一定會找到低點了，我們可以想最深的坑會有最陡的坡，所以我們只要給予滑板一定的動力就能一路滑到最深的坑裡爬不出來，而這個名詞就叫做<code>學習率(Learn Rate)</code>，若學習率太高(動力太大)就會找不到最低點，若是動力太小找到最低點則會非常的緩慢，所以就會使用一些偷吃步找到最低點，在深度學習中的偷吃步就是optimizer，可以利用不同optimizer來找的最合適的梯度下降法。</p>
+<p><code>損失函數(Loss Function)</code>:一個模型學到特徵的好壞，最關鍵的點就是損失函數的設計，在keras中基本上只會使用到兩個:分類任務常用的categorical_crossentropy，以及回歸任務常用的MSE，當然這些都會是一定的，現階段只會會用就可以了。</p>
+<pre><code># 宣告loss finction與optimizer
+model.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
+# 開始訓練model batch_size一次丟多少資料進去訓練 epochs總共要訓練幾次
+history = model.fit(x_train, y_train,
+                    batch_size=128, 
+                    epochs=10,
+                    verbose=1,
+                    validation_data=(x_test, y_test))
+</code></pre>
+<pre><code>#結果
+Epoch 1/10
+469/469 [==============================] - 1s 2ms/step - loss: 0.2677 - accuracy: 0.9238 - val_loss: 0.1259 - val_accuracy: 0.9622
+Epoch 2/10
+469/469 [==============================] - 1s 2ms/step - loss: 0.1011 - accuracy: 0.9696 - val_loss: 0.0968 - val_accuracy: 0.9697
+Epoch 3/10
+469/469 [==============================] - 1s 2ms/step - loss: 0.0662 - accuracy: 0.9804 - val_loss: 0.0781 - val_accuracy: 0.9758
+Epoch 4/10
+469/469 [==============================] - 1s 2ms/step - loss: 0.0457 - accuracy: 0.9858 - val_loss: 0.0725 - val_accuracy: 0.9762
+Epoch 5/10
+469/469 [==============================] - 1s 2ms/step - loss: 0.0362 - accuracy: 0.9888 - val_loss: 0.0755 - val_accuracy: 0.9775
+Epoch 6/10
+469/469 [==============================] - 1s 2ms/step - loss: 0.0266 - accuracy: 0.9913 - val_loss: 0.0672 - val_accuracy: 0.9784
+Epoch 7/10
+469/469 [==============================] - 1s 2ms/step - loss: 0.0204 - accuracy: 0.9938 - val_loss: 0.0722 - val_accuracy: 0.9793
+Epoch 8/10
+469/469 [==============================] - 1s 2ms/step - loss: 0.0167 - accuracy: 0.9946 - val_loss: 0.0744 - val_accuracy: 0.9796
+Epoch 9/10
+469/469 [==============================] - 1s 2ms/step - loss: 0.0158 - accuracy: 0.9950 - val_loss: 0.0826 - val_accuracy: 0.9778
+Epoch 10/10
+469/469 [==============================] - 1s 2ms/step - loss: 0.0130 - accuracy: 0.9955 - val_loss: 0.0845 - val_accuracy: 0.9784
+</code></pre>
+<p>我們可以看到用DNN訓練手寫辨識已經97.84%的辨識率了，是不是很簡單呢?<br />
+明天就來教一下CNN的架構與程式，那我們明天再見!</p>
+<p>完整程式碼</p>
+<pre><code>import tensorflow.keras
+import numpy as np 
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Activation
+from tensorflow.keras.utils import to_categorical
+
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+x_train = x_train.reshape(60000, 784)
+x_test = x_test.reshape(10000, 784)
+x_train = x_train/255
+x_test = x_test/255
+y_train = to_categorical(y_train)
+y_test = to_categorical(y_test)
+# 建立模型
+model = Sequential()
+# 輸入層與隱藏層
+model.add(Dense(units=256,input_dim=784, activation='relu'))
+# 隱藏層
+model.add(Dense(units=128, activation='relu'))
+# 輸出層
+model.add(Dense(units=10,activation='softmax'))
+
+model.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
+
+history = model.fit(x_train, y_train,
+                    batch_size=128,
+                    epochs=10,
+                    verbose=1,
+                    validation_data=(x_test, y_test))
+</code></pre>
+<p>課程中的程式碼都能從我的github專案中看到<br />
+<a href="https://github.com/AUSTIN2526/learn-AI-in-30-days">https://github.com/AUSTIN2526/learn-AI-in-30-days</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day02.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day04.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day02.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day04.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

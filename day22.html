@@ -1,0 +1,297 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 22: 【day22】對Google評論自動分群-HDBSCAN與Sentence-BERT(上) - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day22對google評論自動分群-hdbscan與sentence-bert上"><a class="header" href="#day22對google評論自動分群-hdbscan與sentence-bert上">【day22】對Google評論自動分群-HDBSCAN與Sentence-BERT(上)</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-26 21:30:21<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10298507">https://ithelp.ithome.com.tw/articles/10298507</a></p>
+</blockquote>
+<hr />
+<h1 id="dbscan的問題"><a class="header" href="#dbscan的問題">DBSCAN的問題</a></h1>
+<p>我們昨天提到了分群演算法DBSCAN的分群原理，也提到了密度不同會導致的問題，你可能會覺得這是一個小問題，但在實際使用上卻因這個密度，從而導致很多例外情況發生。我們先看以下例子</p>
+<p><img src="images/20152236J09irtEMa9.png" alt="" /></p>
+<pre><code>x = np.random.randint(0, 100, 100).tolist() + np.random.randint(150, 250, 100).tolist()
+y = np.random.randint(0, 100, 100).tolist() + np.random.randint(150, 250, 100).tolist()
+X = [[i,j] for i,j in zip(x,y)]
+X = np.array(X)
+</code></pre>
+<p>首先我們先用程式創建一個密度相似的資料集，接下來透過DBSCAN分群來看看結果。</p>
+<p><img src="images/20152236jnNcgJqe4K.png" alt="" /></p>
+<pre><code>dbscan = DBSCAN(eps=30, min_samples=4)
+dbscan.fit(X)
+label_pred = dbscan.labels_
+plt.scatter(X[:, 0], X[:, 1],c=label_pred)
+plt.show()
+</code></pre>
+<p>可以看到圖片中分群效果是很好的，這是因為我們知道資料分布的狀況，而且數據不混亂，所以可以很快地設定DBSCAN的參數。但在實際的數據中很難像圖片中一樣乾淨。所以我們現在加入一些雜訊，讓資料更能貼近實際狀況。</p>
+<p><img src="images/20152236X4B2FOEUjR.png" alt="" /><br />
+在這裡我重新調整了DBSCAN的參數(eps=10,min_sample=3)，調整完後可以看到DBSCAN還是能大致分類出兩大群，但效果已經沒有一開始的好，如果這時我們又加入了一筆資料呢?</p>
+<p><img src="images/20152236eSN3t0cgkT.png" alt="" /><br />
+加入資料後分群的結果再度變成了另一種樣子，這就是DBSCAN特性造成的最大的缺點，只要去變動一點資料，或是稍微調整參數值，就會大幅度的改變原先的結果。而且調整DBSCAN的參數時，必須需要對原始資料非常熟悉，不然會非常的難調整參數，可能條整了半天都沒辦法達成想要的結果。</p>
+<p>看到了DBSCAN的問題是不是覺得拿來做分群會非常的麻煩，所以我們需要了解一下HDBSCAN這個分群方式</p>
+<h1 id="hdbscanhierarchical-dbscan"><a class="header" href="#hdbscanhierarchical-dbscan">HDBSCAN(Hierarchical DBSCAN)</a></h1>
+<p><code>HDBSCAN(Hierarchical DBSCAN)</code>就是為了解決DBSCAN的這些問題從而誕生的技術，不過這一個技術說明起來會牽扯到非常多的相關知識，所以我在這邊挑幾個重點來講解HDBSCAN的分群方式。</p>
+<h2 id="空間變換"><a class="header" href="#空間變換">空間變換</a></h2>
+<p>在我們分群時最頭痛的就是異常點，因為不管是K-means還是DBSCAN都會因為異常點從而影響到了分群的結果，為了改善異常點問題，HDBSCAN利用了<strong>密度的關係</strong>來作<code>空間變換</code>，因為異常點密度較低，所以只需密度較低的樹據，推移到更遙遠的地方，這樣子程式就更容易忽略這些異常點。</p>
+<h2 id="建立最小生成樹"><a class="header" href="#建立最小生成樹">建立最小生成樹</a></h2>
+<p>通過了剛剛提到的空間變換，我們會取得一些密度較高，但各群組密度卻不相同的數據，因為這些群組的產生方式，是依照隨機半徑匡列出來的數據點，也因為密度不同的關係，若要有良好的分群效果必須要在這些群組內計算出最有可能的分群結果，所以我們需要在群內使用演算法產生出<code>最小生成樹</code>，來計算我們各點之間的權值。</p>
+<h2 id="構建與壓縮群組層次結構"><a class="header" href="#構建與壓縮群組層次結構">構建與壓縮群組層次結構</a></h2>
+<p>我們給定群內的最小生成樹，下一步是將其轉換為連接組件的層次結構。根據樹之間的距離，對樹的邊緣進行按增加的順序排序，不斷的重複以上動作，直到每條邊都創建一個新的合併的群組(數據點較近的重新分成一群)。這樣子就能夠將龐大而復雜的群組拆分成更小的群組，如果群組內有<strong>少於最小的樣本的點，就會被當成異常點</strong></p>
+<p>統整了以上提到的三種技術，HDBSCAN實際上做了以下的事情來達成分群的效果。<br />
+1.隨機找到一個數據點當作圓心，並隨機產生半徑畫圓，匡列到的數據點都會被當成同一群類<br />
+2.通過各圓心得距離來初步排除異常點<br />
+3.在各群組內的建立最小生成樹<br />
+4.通過演算法將群內的數據點分成更小的群組，並根據設定的最小樣本數排除異常點<br />
+5.重複以上動作直到掃描完所有的數據點</p>
+<p>與DBSCAN不同的地方是，因為半徑是由程式隨機產生，所以我們只需要控制圓圈內的最小數據點(最低密度)，就能夠快速又穩定的完成分群。這樣子的作法雖然能夠達到較穩定的分群結果，但也因為在構建群組層次結構時會將這些結果再分的更小，所以我們基本上都需要手動合併一些主題。</p>
+<p>說完了HDBSCAN，接下來我們來看看為何文字分群要使用S-BERT這一個model吧。</p>
+<h1 id="sentence-berts-bert"><a class="header" href="#sentence-berts-bert">Sentence-BERT(S-BERT)</a></h1>
+<p>為了將文字轉換成能夠被分群的資料，我們需要透過一些方式轉換，像是可以通過先前接觸到的BERT，透過訓練文本之間的回歸任務，將文字拼接到網路之中，但如果是使用BERT方式，過程將會十分的緩慢，例如層次分群的方法，分群10,000個句子，BERT大約需要花費65個小時才能夠完成。但我們不可能只是為了分群就等了這麼久，所以我們要來看看S-BERT究竟是什麼?能不能替代BERT當作分群轉換方式。</p>
+<p>S-BERT這是個model是對BERT分群的方式改進而產生的model，該model是使用<code>孿生網路(Siamese network)</code>和<code>三重網絡(triplet networks)</code>結構來產生一個有意義的embedding，embedding結果可以直接通過餘弦相似度或歐式距離等數學公式直接進行比對，這替代了原本BERT對句子之間做回歸的訓練時間。據S-BERT論文所說，可以將BERT原本65小時訓練時長縮短至僅僅5秒。</p>
+<h2 id="孿生網路siamese-network"><a class="header" href="#孿生網路siamese-network">孿生網路(Siamese network)</a></h2>
+<p>在開始說明S-BERT之前我們要先知道什麼叫做<code>孿生網路(Siamese network)</code>，所謂的孿生神經網路，就是由兩個<code>權值共享（Shared Weights）</code>的子網路所建構出的一個網路，你可能會想若是兩個相同的神經網路那並且權值共享，那不就等於是一個相同的網路嗎?幹嘛要多此一舉將一個網路能解決的是分成兩個。這個問題的答案非常簡單。</p>
+<p>答案就是我們需要兩個embedding的結果來計算文本之間的相似度，所以我們需要有兩個輸入與兩個輸出，這時就使用一個網路就無法達成這個目的了。</p>
+<h2 id="三重網絡triplet-networks"><a class="header" href="#三重網絡triplet-networks">三重網絡(triplet networks)</a></h2>
+<p>三重網絡是孿生網路的一種延伸，孿生不同的是，三重網路在訓練時，採用三個樣本為一組，分別是<code>參考樣本</code>、<code>同類樣本</code>、<code>異類樣本</code>，這三個樣本是使用相同的網路。</p>
+<p>三重網路會有兩個輸出一個是<strong>參考樣本與同類樣本</strong>計算出來的相似距離，另一個是<strong>參考樣本與異類樣本</strong>計算出來的最不相似距離，通過這樣的訓練方式我們就可以找到最相似的樣本與最不相似的樣本。</p>
+<p>三重網路的做法與我們在<a href="https://ithelp.ithome.com.tw/articles/10291607">【day13】預訓練模型訓練 &amp; 應用- 使用OpenCV製作人臉辨識點名系統 (下)</a>稍微提及到的Google Face Net所要做的事情相同，只是對象從人臉變成了文字而已。</p>
+<p>接下來我們來看看S-BERT的架構到底是什麼</p>
+<h2 id="s-bert架構"><a class="header" href="#s-bert架構">S-BERT架構</a></h2>
+<p><img src="images/20152236mBeysyuZxe.jpg" alt="" /><br />
+S-BERT做了些實驗比較孿生網路與三重網路哪種方式較佳，而這一方面由孿生網路勝出，所以我們可以看到圖片中S-BERT的基礎架構其實就是，將原始的BERT加上一層池化層並更改成孿生網路的模式而已。</p>
+<p>在S-BERT的網路中池化層的功用非常的重要，因為輸入的token都不同，所以輸出的維度也就會不平均，於是就需要在BERT的輸出後面，加入一層mean pooling來取token的平均值，這樣子就可以取得BERT該有的embedding大小。</p>
+<p>通過這樣子的結果，我們就可以直接使用這個embedding來各句子之間的相似度，或是直接使用這個embedding來幫助我們對文字做分群。</p>
+<h1 id="結論"><a class="header" href="#結論">結論</a></h1>
+<p>我們今天所講的兩個技術，都是在文字分群中相當重要的，因為我們在分群時最重要的就是準確率以及完成速度，若分群的速度過於緩慢，那不如自己手動分群。</p>
+<p>所以我們需要拋棄掉BERT的方式，改用S-BERT幫助我們完成分群的動作，並且利用HDBSCAN這種不容易受到資料影響的分群方式，讓我們能夠找到更仔細的群組，接下來就是看我們該如何把這些群組合併或是移除了，我們明天就來看看如何使用這兩個技術，對google評論分群的效果。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day21.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day23.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day21.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day23.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

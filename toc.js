@@ -1,0 +1,70 @@
+// Populate the sidebar
+//
+// This is a script, and not included directly in the page, to control the total size of the book.
+// The TOC contains an entry for each page, so if each page includes a copy of the TOC,
+// the total size of the page becomes O(n**2).
+class MDBookSidebarScrollbox extends HTMLElement {
+    constructor() {
+        super();
+    }
+    connectedCallback() {
+        this.innerHTML = '<ol class="chapter"><li class="chapter-item affix "><a href="index.html">課程簡介</a></li><li class="chapter-item "><a href="day01.html"><strong aria-hidden="true">1.</strong> Day 01: 【day1】python&amp;函式庫 安裝與介紹</a></li><li class="chapter-item "><a href="day02.html"><strong aria-hidden="true">2.</strong> Day 02: 【day2】python基礎語法</a></li><li class="chapter-item "><a href="day03.html"><strong aria-hidden="true">3.</strong> Day 03: 【day3】來辨識圖像-深度神經網路(Deep Neural Network)</a></li><li class="chapter-item "><a href="day04.html"><strong aria-hidden="true">4.</strong> Day 04: 【day4】找到圖片的特徵-捲積神經網路(Convolutional neural network)</a></li><li class="chapter-item "><a href="day05.html"><strong aria-hidden="true">5.</strong> Day 05: 【day5】爬蟲與股票預測-長短期記憶模型(Long short-term memory) (上)</a></li><li class="chapter-item "><a href="day06.html"><strong aria-hidden="true">6.</strong> Day 06: 【day6】爬蟲與股票預測-長短期記憶模型(Long short-term memory) (下)</a></li><li class="chapter-item "><a href="day07.html"><strong aria-hidden="true">7.</strong> Day 07: 【day7】解析gz檔案 &amp; 使用Pytorch做CIFAR10影像辨識 (上)</a></li><li class="chapter-item "><a href="day08.html"><strong aria-hidden="true">8.</strong> Day 08: 【day8】解析gz檔案 &amp; 使用Pytorch做CIFAR10影像辨識 (下)</a></li><li class="chapter-item "><a href="day09.html"><strong aria-hidden="true">9.</strong> Day 09: 【day9】 讓電腦了解文字資料 &amp; 使用Pytorch做IMDB影評分析</a></li><li class="chapter-item "><a href="day10.html"><strong aria-hidden="true">10.</strong> Day 10: 【day10】人工智慧、機器學習、深度學習究竟差異在哪裡?</a></li><li class="chapter-item "><a href="day11.html"><strong aria-hidden="true">11.</strong> Day 11: 【day11】集成式學習 &amp; 使用xgboost過濾垃圾郵件</a></li><li class="chapter-item "><a href="day12.html"><strong aria-hidden="true">12.</strong> Day 12: 【day12】預訓練模型訓練 &amp; 應用- 使用OpenCV製作人臉辨識點名系統 (上)</a></li><li class="chapter-item "><a href="day13.html"><strong aria-hidden="true">13.</strong> Day 13: 【day13】預訓練模型訓練 &amp; 應用- 使用OpenCV製作人臉辨識點名系統 (下)</a></li><li class="chapter-item "><a href="day14.html"><strong aria-hidden="true">14.</strong> Day 14: 【day14】預測Hololive七期生的樣貌-生成式對抗網路(Generative Adversarial Network)(上)</a></li><li class="chapter-item "><a href="day15.html"><strong aria-hidden="true">15.</strong> Day 15: 【day15】預測Hololive七期生的樣貌-生成式對抗網路(Generative Adversarial Network)(下)</a></li><li class="chapter-item "><a href="day16.html"><strong aria-hidden="true">16.</strong> Day 16: 【day16】NLP的首選模型Transformer介紹</a></li><li class="chapter-item "><a href="day17.html"><strong aria-hidden="true">17.</strong> Day 17: 【day17】假消息辨識-BERT(Bidirectional Encoder Representations from Transformers)(上)</a></li><li class="chapter-item "><a href="day18.html"><strong aria-hidden="true">18.</strong> Day 18: 【day18】假消息辨識-BERT(Bidirectional Encoder Representations from Transformers)(下)</a></li><li class="chapter-item "><a href="day19.html"><strong aria-hidden="true">19.</strong> Day 19: 【day19】找到文章的重點-T5( Text-To-Text Transfer Transformer)(上)</a></li><li class="chapter-item "><a href="day20.html"><strong aria-hidden="true">20.</strong> Day 20: 【day20】找到文章的重點-T5( Text-To-Text Transfer Transformer)(下)</a></li><li class="chapter-item "><a href="day21.html"><strong aria-hidden="true">21.</strong> Day 21: 【day21】分群?分類?傻傻分不清楚-分群演算法介紹</a></li><li class="chapter-item "><a href="day22.html"><strong aria-hidden="true">22.</strong> Day 22: 【day22】對Google評論自動分群-HDBSCAN與Sentence-BERT(上)</a></li><li class="chapter-item "><a href="day23.html"><strong aria-hidden="true">23.</strong> Day 23: 【day23】對Google評論自動分群-HDBSCAN與Sentence-BERT(下)</a></li><li class="chapter-item "><a href="day24.html"><strong aria-hidden="true">24.</strong> Day 24: 【day24】加快程式的運算速度-學習常見的降維演算法</a></li><li class="chapter-item "><a href="day25.html"><strong aria-hidden="true">25.</strong> Day 25: 【day25】手刻最簡單的神經網路-單層感知器（Single Layer Perceptron）</a></li><li class="chapter-item "><a href="day26.html"><strong aria-hidden="true">26.</strong> Day 26: 【day26】手刻神經網路來解決XOR問題-多層感知器 (Multilayer perceptron) (上)</a></li><li class="chapter-item "><a href="day27.html"><strong aria-hidden="true">27.</strong> Day 27: 【day27】手刻神經網路來解決XOR問題-多層感知器 (Multilayer perceptron) (下)</a></li><li class="chapter-item "><a href="day28.html"><strong aria-hidden="true">28.</strong> Day 28: 【day28】不要再用準確率(Accuracy)評估分類模型了!-混淆矩陣(Confusion Matrix)與評估指標</a></li><li class="chapter-item "><a href="day29.html"><strong aria-hidden="true">29.</strong> Day 29: 【day29 】蒐集資料與訓練模型時會發生的常見問題 &amp; 解決方式</a></li><li class="chapter-item "><a href="day30.html"><strong aria-hidden="true">30.</strong> Day 30: 【day30】路途還很遙遠只有良好的基礎才能走向更遠的路-30天的技術總結與心得</a></li></ol>';
+        // Set the current, active page, and reveal it if it's hidden
+        let current_page = document.location.href.toString().split("#")[0].split("?")[0];
+        if (current_page.endsWith("/")) {
+            current_page += "index.html";
+        }
+        var links = Array.prototype.slice.call(this.querySelectorAll("a"));
+        var l = links.length;
+        for (var i = 0; i < l; ++i) {
+            var link = links[i];
+            var href = link.getAttribute("href");
+            if (href && !href.startsWith("#") && !/^(?:[a-z+]+:)?\/\//.test(href)) {
+                link.href = path_to_root + href;
+            }
+            // The "index" page is supposed to alias the first chapter in the book.
+            if (link.href === current_page || (i === 0 && path_to_root === "" && current_page.endsWith("/index.html"))) {
+                link.classList.add("active");
+                var parent = link.parentElement;
+                if (parent && parent.classList.contains("chapter-item")) {
+                    parent.classList.add("expanded");
+                }
+                while (parent) {
+                    if (parent.tagName === "LI" && parent.previousElementSibling) {
+                        if (parent.previousElementSibling.classList.contains("chapter-item")) {
+                            parent.previousElementSibling.classList.add("expanded");
+                        }
+                    }
+                    parent = parent.parentElement;
+                }
+            }
+        }
+        // Track and set sidebar scroll position
+        this.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A') {
+                sessionStorage.setItem('sidebar-scroll', this.scrollTop);
+            }
+        }, { passive: true });
+        var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+        sessionStorage.removeItem('sidebar-scroll');
+        if (sidebarScrollTop) {
+            // preserve sidebar scroll position when navigating via links within sidebar
+            this.scrollTop = sidebarScrollTop;
+        } else {
+            // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+            var activeSection = document.querySelector('#sidebar .active');
+            if (activeSection) {
+                activeSection.scrollIntoView({ block: 'center' });
+            }
+        }
+        // Toggle buttons
+        var sidebarAnchorToggles = document.querySelectorAll('#sidebar a.toggle');
+        function toggleSection(ev) {
+            ev.currentTarget.parentElement.classList.toggle('expanded');
+        }
+        Array.from(sidebarAnchorToggles).forEach(function (el) {
+            el.addEventListener('click', toggleSection);
+        });
+    }
+}
+window.customElements.define("mdbook-sidebar-scrollbox", MDBookSidebarScrollbox);

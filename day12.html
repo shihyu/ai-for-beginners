@@ -1,0 +1,347 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 12: 【day12】預訓練模型訓練 &amp; 應用- 使用OpenCV製作人臉辨識點名系統 (上) - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day12預訓練模型訓練--應用--使用opencv製作人臉辨識點名系統-上"><a class="header" href="#day12預訓練模型訓練--應用--使用opencv製作人臉辨識點名系統-上">【day12】預訓練模型訓練 &amp; 應用- 使用OpenCV製作人臉辨識點名系統 (上)</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-16 01:38:53<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10291158">https://ithelp.ithome.com.tw/articles/10291158</a></p>
+</blockquote>
+<hr />
+<p>到這邊我相信你已經有機器學習與深度學習的概念了，所以接下來的課程中我會開始來教一些預訓練模型的用法，而這次要做的就是使用OPENCV辨識人臉並成功點名，而我們今天要做的事情就是辨識臉部並創建自己的資料集。</p>
+<h2 id="辨識臉部"><a class="header" href="#辨識臉部">辨識臉部</a></h2>
+<p>今天的目錄如下</p>
+<ul>
+<li>1.開啟電腦鏡頭並顯示</li>
+<li>2.下載xml與辨識臉部</li>
+<li>3.減少電腦資源與可視化</li>
+</ul>
+<h2 id="開啟電腦鏡頭並顯示"><a class="header" href="#開啟電腦鏡頭並顯示">開啟電腦鏡頭並顯示</a></h2>
+<p>在開始辨識人臉之前我們需要打開電腦鏡頭，這裡可以使用opencv當中VideoCaptured()開啟鏡頭，但在windows當中卻有一些BUG存在，就是無法每次都成功的開啟，所以我們可以寫一個while迴圈，判斷鏡頭是否開啟，來解決這個問題。</p>
+<pre><code>#開啟鏡頭
+cap = cv2.VideoCapture(0)
+#確保鏡頭完整的開啟
+while(not cap.isOpened()):
+    cap = cv2.VideoCapture(0)
+</code></pre>
+<p>開啟鏡頭後，就能開始讀取資料了，透過cap.read()能讀取目前鏡頭的照片。</p>
+<pre><code>#是否有圖片type:bool,圖片本身
+ret, frame = cap.read()
+</code></pre>
+<p>但在市面上的人臉辨識系統，都是以影片的樣式來表達，所以我們需要利用肉眼視覺暫留(Persistence of vision)的方式將圖片轉成影片，所以我們要將cap.read()這個function放入到while()當中進行迴圈，最後通過imshow將結果顯示出來，並且能夠使用imwrite來儲存圖片()</p>
+<pre><code>cnt = 0
+while(True):
+    ret, frame = cap.read()
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    cv2.imshow('live', frame) 
+    cv2.imwrite(f'face/my_face_{cnt}.jpg',frame)
+</code></pre>
+<p>這樣我們就可以取得很多的人臉圖片<br />
+<img src="images/20152236w5ZHJ4E64f.jpg" alt="" /></p>
+<p>但我們觀察這張圖片就會發現，照片中含有太多的不是人臉的資料，這樣在訓練時可能就會使準確率下降，甚至是underfitting，所以這時就需要使用opencv的臉部辨識器，來找到我們的人臉。</p>
+<h2 id="下載xml與辨識臉部"><a class="header" href="#下載xml與辨識臉部">下載xml與辨識臉部</a></h2>
+<p>首先我們前往opencv的github找到"haarcascade_frontalface_alt2.xml"<a href="https://github.com/mitre/biqt-face/blob/master/config/haarcascades/haarcascade_frontalface_alt2.xml">點我前往</a><br />
+<img src="images/20152236tk4MAPRK3Y.jpg" alt="" /></p>
+<p>之後點擊紅框處複製文字<br />
+<img src="images/201522360e9M085nyW.jpg" alt="" /></p>
+<p>最後貼上記事本上並將檔案名稱命名為"haarcascade_frontalface_alt2.xml"，這樣我們就有臉部辨識的設定檔了<br />
+<img src="images/20152236rL1xl6RolL.jpg" alt="" /></p>
+<p>我們剛剛下載的是程式設定檔，所以還需加入模型本身，在這邊只需要使用CascadeClassifier()就能建立一個臉部辨識器了。</p>
+<pre><code>classfier = cv2.CascadeClassifier(cv2.data.haarcascades +"haarcascade_frontalface_alt2.xml")
+</code></pre>
+<h2 id="減少電腦資源與可視化"><a class="header" href="#減少電腦資源與可視化">減少電腦資源與可視化</a></h2>
+<p>有了辨識器後我們需要去設定他的參數我們先看個範例</p>
+<pre><code>faceRects = classfier.detectMultiScale(gray, scaleFactor = 1.2, minNeighbors = 3, minSize = (32, 32))
+</code></pre>
+<p>首先說明一下這些參數的意思<br />
+<code>ScaleFactor</code>：每次搜尋方塊減少的比例<br />
+<code>minNeighbors</code>:矩形個數<br />
+<code>minSize</code>:檢測對象最小值</p>
+<p>這樣是不是還是看不懂?因為opencv中是使用一種叫做<code>蒙地卡羅方法(Monte Carlo method)</code>的方式，這種方法的中心技術就是<strong>猜</strong>與<strong>賭</strong>，這種做法就像是捕魚一樣，我們先灑網出去猜這個區域究竟有沒有魚，若是有魚我們就開始縮小魚網的範圍，最後把魚抓上來。</p>
+<p>我們來看看在opencv中會使用哪些做法，首先使用較大範圍的方格去辨識臉部，在opencv中是使<code>minNeighbors</code>這個參數是來辨別相鄰方格的關聯性，關聯性大於等於這個值時電腦才認為區域內有臉部。若區域內有臉部會透過<code>ScaleFactor</code>數值減少範圍大小，直到指定的最小範圍時<code>minSize</code>時縮小才會停止，而使用這種技術可使減少消耗電腦的資源，畢竟圖像資源是非常吃效能的。</p>
+<p>了解後我們會知道，圖片會有機會找不到人臉，這時程式正在擴大範圍在偵測，此時會消耗非常多的效能，若是在繼續執行動作可能會導致程式出現意外狀況，所以我們需要設定成當有人臉時才繼續接續的動作。</p>
+<pre><code>if faceRects:
+</code></pre>
+<p>當條件達成後代表faceRects裡面含有4個數值分別是<code>x軸座標</code>、<code>y軸座標</code>、<code>寬</code>、<code>長</code>，但可能不只讀到一張人臉，所以需要將程式寫在一個for迴圈中找到所有的人臉數值</p>
+<pre><code>for (x, y, w, h) in faceRects:
+</code></pre>
+<p>有了這些數值後我們能通過縮小圖片的範圍，並且畫出一個方形包住我們的人臉，代表程式有偵測到</p>
+<pre><code>face = frame[y - 10: y + h + 10, x - 10: x + w + 10]
+#圖片,座標,長寬,線條顏色,粗度
+cv2.rectangle(frame, (x - 10, y - 10), (x + w + 10, y + h + 10), (0,255,0), 2)
+</code></pre>
+<p>為了增加辨識臉部的準確率先將資料轉換成灰階，這可以使小區域的亮度降低防止單一像素過亮的問題，這種做法並不會改變圖片整體的亮度。</p>
+<pre><code>gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+</code></pre>
+<p>我們的程式是寫在一個while迴圈中，所以我們要設定一個跳脫條件，我們可以設定成按Q件離開，並且在離開後需要將視窗與鏡頭都一起關閉。</p>
+<pre><code>#按Q跳脫迴圈
+if cv2.waitKey(1) == ord('q'):
+    break
+    
+#釋放鏡頭
+cap.release()
+#關閉視窗
+cv2.destroyAllWindows()
+</code></pre>
+<p>最後將程式碼組合在一起就完成取得人臉的方式了</p>
+<h2 id="完整程式碼"><a class="header" href="#完整程式碼">完整程式碼</a></h2>
+<pre><code>import cv2
+
+cap = cv2.VideoCapture(0)
+while(not cap.isOpened()):
+    cap = cv2.VideoCapture(0)
+    
+cnt = 0
+classfier = cv2.CascadeClassifier(cv2.data.haarcascades +"haarcascade_frontalface_alt2.xml")
+while(True):
+    ret, frame = cap.read()
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    faceRects = classfier.detectMultiScale(gray, scaleFactor = 1.2, minNeighbors = 3, minSize = (32, 32))
+
+    if len(faceRects) &gt; 0:      
+        for (x, y, w, h) in faceRects:
+            face = frame[y - 10: y + h + 10, x - 10: x + w + 10]
+            c
+            cnt+=1
+            cv2.imwrite(f'face/my_face_{cnt}.jpg',face)
+    
+    if cv2.waitKey(1) == ord('q'):
+        break
+        
+    cv2.imshow('live', frame)
+
+cap.release()
+cv2.destroyAllWindows()
+</code></pre>
+<p>今天的難度是不是變成比較低了呢?因為今天只是在玩一些opencv的套件，明天的難度會開始提升，因為會來玩一下預訓練模型VGG-16</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day11.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day13.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day11.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day13.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 16: 【day16】NLP的首選模型Transformer介紹 - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day16nlp的首選模型transformer介紹"><a class="header" href="#day16nlp的首選模型transformer介紹">【day16】NLP的首選模型Transformer介紹</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-20 18:30:22<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10294494">https://ithelp.ithome.com.tw/articles/10294494</a></p>
+</blockquote>
+<hr />
+<p>我們已經在CV(影像辨識)的領域中學習了如何辨識圖像、使用pre-train model以及GAN生成圖像，而我們在NLP中只學會了情緒分析，所以我們這幾天要來學習，如何使用文本的pre-train model與生成文本，於是今天要先來了解電腦是怎麼樣生成文本資料的。</p>
+<h2 id="seq2seqsequence-to-sequence"><a class="header" href="#seq2seqsequence-to-sequence">Seq2Seq(Sequence to sequence)</a></h2>
+<p><img src="images/20152236dPvoNRTBI3.jpg" alt="" /><br />
+<code>seq2seq</code>是一種<code>encoder-decoder</code>的架構，架構中的encoder與我們在<a href="https://ithelp.ithome.com.tw/articles/10289649">【day9】 讓電腦了解文字資料 &amp; 使用Pytorch做IMDB影評分析</a>的作法是相同的，利用RNN神經網路訓練文本資料，取得最後一個輸出狀態<code>hidden state</code>(Hn或是Yn)，那這個hidden state就會是我們我們電腦了解的文本訊息。</p>
+<p>我們在第9天的作法就是將hidden state通過激勵函數sigmoid把狀態縮放至0~1的範圍，之後使用二分法將結果分成正面與負面。但如果不使用激勵函數而是直接使用hidden state呢?這就是decoder的做法，decoder會利用每次RNN神經網路的輸出的hidden state當作模型的輸入，推敲文字之間的關係，找到下一個文字出現的機率，從而完成文本翻譯或是文本生成的任務。</p>
+<p>簡單來說seq2seq的技術就是將資料<strong>通過encoder產生出hidden state</strong>，並且通過<strong>decoder解析hidden state</strong>所包含的內容，最後來達成文本生成或是翻譯的目的。</p>
+<p>不過在seq2seq當中有一個重大的缺陷，還記得我們說過RNN會存在者資料經過計算消失的問題嗎?這一點雖然到LSTM有了些改善，但是還是<strong>沒辦法完整的保留資訊</strong>，這就會使的decoder所了解的資訊不足導致生成結果不佳。我們舉個例子來幫助理解。</p>
+<p>假設有個老師(encoder)在讀書時只自己有用的資料保留下來，那他在教導學生(decoder)時就會把他認為的重點劃出來並且傳達給學生，但是學生連基礎的不好的情況下，卻吸收到了這些過於精簡的知識，導致無法理解老師想要表達什麼，這樣子的考試結果自然會不佳。</p>
+<p>這時老師就想到了一個方式，把他在讀書時，學習知識的過程與與學習到知識都跟學生說，讓學生可以從老師讀書的方法中找到一個最佳的解法，而不是只學習重點，這種方式在深度學習中就叫做<code>注意力機制(attention)</code>。</p>
+<p><img src="images/20152236HgGT1PHBYM.jpg" alt="" /><br />
+我們先來看加入attention後的seq2seq架構中，hidden state變成了不只一個，因為加入attention後，RNN神經網路會把他所訓練出來的所有結果(H0~Hn)通通交給encoder動態判斷哪一個hidden staete是我要的結果。<br />
+<img src="images/20152236CHj1UOIjWe.jpg" alt="" /></p>
+<h2 id="傳統rnn的問題"><a class="header" href="#傳統rnn的問題">傳統RNN的問題</a></h2>
+<p>再來就是傳統RNN所產生的問題，不管是LSTM、GRU、simple RNN...等，都有一個相同的問題，就是RNN模型都<strong>需等待上一個節點計算完畢</strong>後，才能進行下一個節點的運算。若輸入資料維度太龐大，那這個訓練時長，將會比相同維度的CNN網路還要來的更久(<strong>LSTM無法平行運算</strong>)，所以這時就有一個新的技術叫做transformer。</p>
+<h2 id="什麼是transformer"><a class="header" href="#什麼是transformer">什麼是Transformer?</a></h2>
+<p>Transformer是於2017年由<code>Google Brain</code>團隊推出的一個模型，因計算的速度遠大於LSTM等RNN模型，所以成為了NLP的首選模型。那transformer是怎麼樣運作的呢?首先我們先看到這張圖片<br />
+<img src="images/20152236FhEpHcv9Es.jpg" alt="" /></p>
+<blockquote>
+<p>圖片來源:李弘毅老師youtube</p>
+</blockquote>
+<p>在這張圖片中做了一件事情，將原始的RNN神經網路層改成一個<code>自注意力機制(self-attention)</code>層，而這個self-attention的做法就是<strong>利用矩陣計算</strong>來替代RNN網路，使原本要經過好幾個節的的計算過程，變得可平行運算，且所有輸出都能夠理解所有的輸入，所以接下來就來看看這個self-attention究竟是做了什麼樣的事吧。<br />
+<img src="images/20152236YY050mIsGm.jpg" alt="" /><br />
+首先我們先看到<code>x1~x4</code>，這一個就是我們輸入的文字，在第9天時有說到高維度的文字需先降維(圖中採用embedding)才能夠交給電腦運算，這個結果就是a1~a4也是我們在self-attention裡實際計算的資料。</p>
+<p>我們可以看到a1~a4還分出了3個參數q、k、v。這三個參數是在self-attention中相當重要的資料，我們先來看看這些參數所代表的含意</p>
+<div class="table-wrapper"><table><thead><tr><th>名稱</th><th>用處</th></tr></thead><tbody>
+<tr><td>q</td><td>找到輸入的所有k</td></tr>
+<tr><td>k</td><td>被所有q找到</td></tr>
+<tr><td>v</td><td>代表文字本身a</td></tr>
+</tbody></table>
+</div>
+<p>我們先來看一下圖片中b1的例子，首先會先計算q1·k1到q1·k4來得到結果a(1,1到1,4)，之後用softmax來計算文字之間的分數，最後將a1,1到a4,4與我們的實際輸入v1到v4相乘後加總起來得到最後的輸出結果b1，公式表達是長這個樣子<code>b1=sum(softmax(q1·k1/d^0.5)*v1+softmax(q1·k2/d^0.5)*v2+softmax(q1·k3d^0.5/)*v3+softmax(q1·k4/d^0.5)*v4)</code>，而前面提到v是<strong>我們的輸入</strong>、sofmax(q1·kn/d^0.5)是每個<strong>文字之間的分數</strong>，兩個數字相乘就代表這個文字1對文字n的分數，而最後加總的動作就是將文字1(因為是q1)對<strong>所有輸入文字的分數</strong>，這代表的意思就是的b1就是我們x1~x4之間的文字關係，並且在這個過程中皆採用矩陣平行運算，因此改善了原本RNN計算緩慢的問題，也改善了decoder看不見我們輸入的問題。</p>
+<p>但我們原始的self-attention也會產生一種問題就是無法一次注意好幾個文字，我們在看文字時可能會一次關注好幾個相關的資訊，但是在self-attention當中只會找到最相關的，為了改善這個問題，於是衍生了另一種方式<code>多頭注意力機制(Multi-Head Attention)</code>，這種方式非常的簡單就是將q、k、v三個參數分成多個，並且每個q、k、vˋ只會與自己相對編號的q、k、v進行運算。<br />
+<img src="images/20152236yZNdjuCjr4.jpg" alt="" /><br />
+以圖片中為例qi只會找所有的ki，qj只會找所有的kj，利用這種方法使文字能夠關注到更多的資訊，從而運算出更好的結果。</p>
+<p>這樣是不是能了解transformer為何會在NLP中非常重要了呢?不過有沒有發現一件事情transformer中的encoder就是一種特徵擷取的方法，decoder則是一種生成方式，這是不是與我們昨天學習到的GAN非常相似。所以transformer其實不只能運用在NLP當中，也能用在圖像之中，只要是CNN可以做到的事情transformer也能夠做到，所以我認為transformer會是將來AI技術中最閃亮的一項技術。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day15.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day17.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day15.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day17.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

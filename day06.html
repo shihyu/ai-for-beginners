@@ -1,0 +1,427 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 06: 【day6】爬蟲與股票預測-長短期記憶模型(Long short-term memory) (下) - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day6爬蟲與股票預測-長短期記憶模型long-short-term-memory-下"><a class="header" href="#day6爬蟲與股票預測-長短期記憶模型long-short-term-memory-下">【day6】爬蟲與股票預測-長短期記憶模型(Long short-term memory) (下)</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-10 00:01:19<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10288943">https://ithelp.ithome.com.tw/articles/10288943</a></p>
+</blockquote>
+<hr />
+<h2 id="lstm股票預測"><a class="header" href="#lstm股票預測">LSTM股票預測</a></h2>
+<ul>
+<li>1.導入函式庫與介紹</li>
+<li>2.資料前處理</li>
+<li>3.架構模型與訓練</li>
+<li>4.效能評估</li>
+</ul>
+<h3 id="1導入函式庫與介紹"><a class="header" href="#1導入函式庫與介紹">1.導入函式庫與介紹</a></h3>
+<pre><code>import numpy as np 
+import pandas as pd
+import tensorflow.keras
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+from sklearn.preprocessing import MinMaxScaler
+</code></pre>
+<p>1.<code>numpy</code>:陣列相關操作<br />
+2.<code>keras.models</code>:架構神經網路、與神經網路相關操作<br />
+3.<code>keras.layers</code>:創建神經網路<br />
+4.<code>sklearn.preprocessing</code>:數值正規化<br />
+5.<code>matplotlib.pyplot</code>:繪畫表格</p>
+<h3 id="2資料前處理"><a class="header" href="#2資料前處理">2.資料前處理</a></h3>
+<p>首先我們先從pandas讀取昨天爬蟲拿到的csv檔，沒有的人可以觀看這篇<a href="https://ithelp.ithome.com.tw/articles/10288835">【day5】爬蟲與股票預測-長短期記憶模型(Long short-term memory) (上)</a></p>
+<pre><code>df = pd.read_csv('data.csv')
+</code></pre>
+<p>我們在課堂的一開始有說到，大部分深度學習模型都要把數值壓縮到0~1之間，不只能加速收斂速度，所以今天我們股票預測要使用的方式是<code>最大最小正規化(Min-Max Normalization)</code></p>
+<pre><code>def Min_Max_normalization(name):
+    #調整維度成[[資料1],[資料2]]
+    name = name.reshape(-1, 1)
+    #正規化數值
+    scaler = MinMaxScaler(feature_range=(0, 1)).fit(name)
+    sc = scaler.transform(name)
+    
+    #[維度還原]
+    return sc.reshape(-1)
+
+#df[row]:可以直接取一整排的數值回傳的type是dataframe
+#values:轉成dataframe轉成array
+open_p  = Min_Max_normalization(df['開盤價'].values)
+max_p = Min_Max_normalization(df['最高價'].values)
+min_p = Min_Max_normalization(df['最低價'].values)
+fin_p = Min_Max_normalization(df['收盤價'].values)
+
+#replace(old,new)這裡是將文字中的,去除掉
+len_p = np.array([int(i.replace(',','')) for i in df['成交筆數'].values])
+len_p = Min_Max_normalization(len_p)
+</code></pre>
+<p>接下來我們來創建自己的資料集(Date set)，首先我們取每10天的資料預測每第11天的資料，並個資料都要帶有5筆特徵(開盤價、最高價、最低價、收盤價、成交筆數)</p>
+<pre><code>data = []
+tmp = []
+label = []
+#最後一筆label的範圍是最大數量-11天
+for cnt in range(len(open_p)-11):
+    #獲取10天的資料
+    open_10 = open_p[cnt:cnt+10]
+    max_10 = max_p[cnt:cnt+10]
+    min_10 = min_p[cnt:cnt+10]
+    fin_10 = fin_p[cnt:cnt+10]
+    len_10 = len_p[cnt:cnt+10]
+    
+    #zip可以將每筆資料都同時丟進for迴圈中
+    for i,j,k,m,n in zip(open_10,max_10,min_10,fin_10,len_10):
+        tmp.append([i, j, k, m, n])
+    data.append(tmp)
+    tmp = []
+    取得收盤價
+    label.append(fin_p[cnt+11:cnt+12][0])
+</code></pre>
+<p>這樣子我們就能得到一組擁有10天資料5個特徵的訓練資料了(資料數量,天數,特徵)</p>
+<p>接下來我們把資料分8:2切割我們的訓練數據與測試數據</p>
+<pre><code>split_cnt = int(len(data)*0.8)
+x_train,y_train = np.array(data[0:split_cnt]),np.array(label[0:split_cnt])
+x_test,y_test = np.array(data[0:len(data)-split_cnt]),np.array(label[0:len(data)-split_cnt])
+</code></pre>
+<p>這樣資料前處理就完成了~~</p>
+<h3 id="3架構模型"><a class="header" href="#3架構模型">3.架構模型</a></h3>
+<p>今天的模型架構也很簡單，但有一個比較需要注意的return_sequences = True，使我們能夠考慮到前後天的資料，而不是只考慮到昨天的結果</p>
+<pre><code>model= Sequential()
+model.add(LSTM(128,input_shape=(10, 5),return_sequences=True,activation='relu'))
+model.add(LSTM(64,return_sequences=False,activation='relu'))
+model.add(Dense(1))
+#mse為跑回歸任務的其中一個loss function
+#回歸任務沒有acc只有loss
+model.compile(loss='mean_squared_error',optimizer='adam')
+# 開始訓練model batch_size一次丟多少資料進去訓練 epochs總共要訓練幾次
+history = model.fit(x_train, y_train,
+                    batch_size=64,
+                    epochs=10,
+                    verbose=1,
+                    validation_data=(x_test, y_test))
+-------------------------------顯示-------------------------------
+Epoch 10/10
+39/39 [==============================] - 0s 8ms/step - loss: 7.0062e-05 - val_loss: 8.8297e-06
+</code></pre>
+<h3 id="4效能評估"><a class="header" href="#4效能評估">4.效能評估</a></h3>
+<p>我們直接拿實際值與預測出來的數值作比對</p>
+<pre><code>y_predicted = model.predict(x_test)
+#預測
+plt.plot(y_predicted)
+#實際值
+plt.plot(y_test)
+#標題
+plt.title('result')
+#y軸標籤
+plt.ylabel('days')
+#x軸標籤
+plt.xlabel('value')
+#顯示折線的名稱
+plt.legend(['predict', 'real'], loc='upper left')
+#顯示折線圖
+plt.show()
+</code></pre>
+<p><img src="images/20152236rrXQ5jhQ1w.jpg" alt="" /></p>
+<p>我們可以看到訓練出來的結果還是有貼近實際值，但實際值下降時，預測有時候是上升的，因為股票預測考慮的因素不只有這一些，考慮更多因素說不定能有更好的結果。</p>
+<h2 id="完整程式碼lstm"><a class="header" href="#完整程式碼lstm">完整程式碼(LSTM)</a></h2>
+<pre><code>import numpy as np 
+import pandas as pd
+import tensorflow.keras
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+from sklearn.preprocessing import MinMaxScaler
+import matplotlib.pyplot as plt
+
+def Min_Max_normalization(name):
+    name = name.reshape(-1, 1)
+    scaler = MinMaxScaler(feature_range=(0, 1)).fit(name)
+    sc = scaler.transform(name)
+    return sc.reshape(-1)
+    
+df = pd.read_csv('data.csv')
+open_p  = Min_Max_normalization(df['開盤價'].values)
+max_p = Min_Max_normalization(df['最高價'].values)
+min_p = Min_Max_normalization(df['最低價'].values)
+fin_p = Min_Max_normalization(df['收盤價'].values)
+len_p = np.array([int(i.replace(',','')) for i in df['成交筆數'].values])
+len_p = Min_Max_normalization(len_p)
+
+data = []
+tmp = []
+label = []
+for cnt in range(len(open_p)-11):
+    open_10 = open_p[cnt:cnt+10]
+    max_10 = max_p[cnt:cnt+10]
+    min_10 = min_p[cnt:cnt+10]
+    fin_10 = fin_p[cnt:cnt+10]
+    len_10 = len_p[cnt:cnt+10]
+    for i,j,k,m,n in zip(open_10,max_10,min_10,fin_10,len_10):
+        tmp.append([i, j, k, m, n])
+    data.append(tmp)
+    tmp = []
+    label.append(fin_p[cnt+11:cnt+12][0])
+        
+split_cnt = int(len(data)*0.8)
+x_train,y_train = np.array(data[0:split_cnt]),np.array(label[0:split_cnt])
+x_test,y_test = np.array(data[0:len(data)-split_cnt]),np.array(label[0:len(data)-split_cnt])
+
+model= Sequential()
+model.add(LSTM(128,input_shape=(10, 5),return_sequences=True,activation='relu'))
+model.add(LSTM(64,return_sequences=False,activation='relu'))
+model.add(Dense(1))
+
+model.compile(loss='mean_squared_error',optimizer='adam')
+# 開始訓練model batch_size一次丟多少資料進去訓練 epochs總共要訓練幾次
+history = model.fit(x_train, y_train,
+                    batch_size=64,
+                    epochs=10,
+                    verbose=1,
+                    validation_data=(x_test, y_test))
+
+y_predicted = model.predict(x_test)
+#預測
+plt.plot(y_predicted)
+#實際值
+plt.plot(y_test)
+#標題
+plt.title('result')
+#y軸標籤
+plt.ylabel('days')
+#x軸標籤
+plt.xlabel('value')
+#顯示折線的名稱
+plt.legend(['predict', 'real'], loc='upper left')
+#顯示折線圖
+plt.show()
+</code></pre>
+<p>到這邊基礎技術基本上都教完了~明天來教一下如何使用pytorch吧</p>
+<p>課程中的程式碼都能從我的github專案中看到<br />
+<a href="https://github.com/AUSTIN2526/learn-AI-in-30-days">https://github.com/AUSTIN2526/learn-AI-in-30-days</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day05.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day07.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day05.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day07.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

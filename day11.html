@@ -1,0 +1,419 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 11: 【day11】集成式學習 &amp; 使用xgboost過濾垃圾郵件 - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day11集成式學習--使用xgboost過濾垃圾郵件"><a class="header" href="#day11集成式學習--使用xgboost過濾垃圾郵件">【day11】集成式學習 &amp; 使用xgboost過濾垃圾郵件</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-15 01:42:16<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10290632">https://ithelp.ithome.com.tw/articles/10290632</a></p>
+</blockquote>
+<hr />
+<h1 id="集成式學習ensemble-learning"><a class="header" href="#集成式學習ensemble-learning">集成式學習(Ensemble learning)</a></h1>
+<p><code>集成式學習(Ensemble learning)</code>是一種機器學習的學習方式，這種學習方式是將好幾個監督式學習的模型結合在一起，來獲得比使用單獨學習算法更好的效果。我們可以將它這學習方式分成三類，分別是<code>引導聚集算法(Bagging)</code>，<code>提升方法(Boosting)</code>，<code>堆疊法(Stacking)</code>。</p>
+<h2 id="引導聚集算法bagging"><a class="header" href="#引導聚集算法bagging">引導聚集算法(Bagging)</a></h2>
+<p><img src="images/20152236VcL9sXI6mg.jpg" alt="" /></p>
+<blockquote>
+<p>圖片來源:李弘毅老師youtube影片</p>
+</blockquote>
+<p>引導聚集算法(Bagging)模型是基於統計學中的<code>自助法(Bootstrapping)</code>來實現的，這種算法是將資料集隨機抽樣建立類群後，在重新抽取下一個類群，不斷的重複這個過程後，訓練每個類群的結果拿來做整合，如果是迴歸任務，則會做平均。舉一個例子來說:我們從一個球池裡面隨機抽取幾個球並記錄裡面球的特徵，之後在放回球池當中，在繼續重複這樣的動作，最後統計每一個類群裡球的特徵找到最好的結果，常見的例子有<code>隨機森林(Random Forest)</code>與<code>決策樹(Decision Tree)</code>。</p>
+<h2 id="提升方法boosting"><a class="header" href="#提升方法boosting">提升方法(Boosting)</a></h2>
+<p><img src="images/20152236PuF29WBfrD.png" alt="" /><br />
+提升方法(Boosting)主要用來減小監督式學習中偏差與方差，一樣會先隨機抽取資料並分類，並通過迭代學習去計算這次模型的誤差(圖片中的紅色箭頭)，之後更新每個樣本被抽到的機率，若前一次分類錯誤率愈高，則權重愈大，最終將每次迭代的結果一起計算，常見的例子<code>極限梯度下降(Xgboost)</code>、<code>自適應增強(adaboost)</code>。</p>
+<h2 id="堆疊法stacking"><a class="header" href="#堆疊法stacking">堆疊法(Stacking)</a></h2>
+<p><img src="https://media.geeksforgeeks.org/wp-content/uploads/20200713234827/mlxtend.PNG" alt="https://media.geeksforgeeks.org/wp-content/uploads/20200713234827/mlxtend.PNG" /></p>
+<blockquote>
+<p>圖片來源:https://www.geeksforgeeks.org/stacking-in-machine-learning-2/</p>
+</blockquote>
+<p>堆疊法(Stacking)與引導聚集算法非常的相似，只差在一個是訓練<code>部分資料</code>，一個是訓練<code>全部的資料</code>，意思就是堆疊法訓練出獨立模型，當作最終模型的輸入特徵，並且訓練這個最終模型，藉由這種方式補足某個模型中缺失的資訊，增強迷型的效果。</p>
+<h1 id="過濾垃圾郵件"><a class="header" href="#過濾垃圾郵件">過濾垃圾郵件</a></h1>
+<p>今天的目錄如下:<br />
+1.安裝函式庫與建立基本環境<br />
+2.資料前處理<br />
+3.訓練模型<br />
+4.測試與比較</p>
+<h2 id="安裝函式庫與建立基本環境"><a class="header" href="#安裝函式庫與建立基本環境">安裝函式庫與建立基本環境</a></h2>
+<h3 id="安裝函式庫"><a class="header" href="#安裝函式庫">安裝函式庫</a></h3>
+<pre><code>pip install xgboost
+</code></pre>
+<h3 id="引用函式庫"><a class="header" href="#引用函式庫">引用函式庫</a></h3>
+<pre><code>import pandas as pd
+import numpy as np
+import random
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+from sklearn.tree import DecisionTreeClassifier
+</code></pre>
+<h3 id="導入資料集"><a class="header" href="#導入資料集">導入資料集</a></h3>
+<p>今天的資料集是SMSSpamCollection<a href="https://www.kaggle.com/datasets/uciml/sms-spam-collection-dataset">點我下載</a>，這個資料集包含者垃圾郵件與真實有用的文件，今天要做的事就是抽取個文件的特徵與分類。我們先利用pandas讀取資料後在開始做資料前處理吧</p>
+<pre><code>data = pd.read_csv('SMSSpamCollection.csv')
+</code></pre>
+<h2 id="資料前處理"><a class="header" href="#資料前處理">資料前處理</a></h2>
+<p>還記得我說過機器學習與深度學習差距究竟在哪嗎?沒錯就是<code>特徵抽取(Feature extraction)</code>的部分，所以我們在資料處理時就需要加入這一個步驟，而在文本中有一個非常好用的技術叫做<code>TF-IDF(Term Frequency-Inverse Document Frequency)</code>，這個技術分成兩個部分<code>詞頻（Term Frequecny）</code>與<code>逆向文件頻率（Inverse Document Frequency）</code>。</p>
+<p>我們來先看一下TF(詞頻)的公式計算<br />
+<img src="images/20152236YgQhHAXCHp.jpg" alt="" /></p>
+<blockquote>
+<p>來源:https://zh.m.wikipedia.org/zh-tw/Tf-idf</p>
+</blockquote>
+<p>在維基百科中是這樣解釋這個公式的<br />
+<img src="images/20152236NmRF1u6GjM.jpg" alt="" /><br />
+這樣是不是有一點複雜?其實TF的概念就是出現在文本中的次數越多次，代表這個單字越沒有獨特性所以計算起來的分數越低。所以這公式的的意思其實就是<code>文字/文字在"單一文件"出現的次數</code>。</p>
+<p>那IDF(逆向文件頻率)是什麼呢?從名稱中可以了解他是一種反向的詞頻計算方式，他的概念與TF相反，在全部的文件中文字出現的越少，代表這文字該資料中是越有獨特性的。<br />
+<img src="images/20152236OWp0WO5fDh.jpg" alt="" /></p>
+<blockquote>
+<p><a href="https://zh.m.wikipedia.org/zh-tw/Tf-idf">https://zh.m.wikipedia.org/zh-tw/Tf-idf</a><br />
+<img src="images/20152236dOBBnAZJpw.jpg" alt="" /><br />
+所以這公式又能解讀成<code>log10(文字/文字出現在"全部文件"次數)</code></p>
+</blockquote>
+<p>為了使我們的資料能夠使用TF-IDF這項技術，所以我們需要先分類出垃圾郵件與真實使用到的郵件。</p>
+<pre><code>def classfier(data):
+    real, fake = [], []      
+    for text, label in zip(data['sms'].values, data['class'].values):
+        if label == 'spam':
+            #記得將文字轉小寫
+            fake.append(text.lower())
+        else:
+            real.append(text.lower())
+    return fake,real
+</code></pre>
+<p>再來透過sklearn計算出這兩個文件TF-IDF分數，但在這邊要注意回傳的結果並不會是有順序的排列，所以我們還需要再另外寫一個function做<code>氣泡序法(Bubble Sort)</code>，將數值從大到小排列出來方便我們取用。</p>
+<pre><code>def getTopScore(data,text):
+    n = len(data)
+    while n &gt; 1:
+        n-=1
+        for i in range(n):
+            #若右側資料比左邊大就交換
+            if data[i] &lt; data[i+1]:  
+                #文字
+                text[i], text[i+1] = text[i+1], text[i]
+                #數值
+                data[i], data[i+1] = data[i+1], data[i]
+    return text
+</code></pre>
+<p>之後就能用計算TF-IDF分數，並使用剛剛建立的function創建前200分數最高的文字，作為資料的特徵。</p>
+<pre><code>def getTfIdfText(fake,real,max_val = 200):
+    #宣告變數
+    vectorizer = TfidfVectorizer()
+    #計算TF-IDF
+    X = vectorizer.fit_transform([' '.join(fake),' '.join(real)]).toarray()
+    #計算分數最高的文字
+    fake_text_top = getTopScore(X[0],vectorizer.get_feature_names())
+    real_text_top = getTopScore(X[1],vectorizer.get_feature_names())
+    #回傳指定的最大結果
+    return fake_text_top[:max_val],real_text_top[:max_val]
+</code></pre>
+<p>接下來我們通過這200個字將我們的原始資料轉換成數字的格式，若是數字有出現我們就設定2，若沒有出現那就設定成1，若超過範圍我們就做zero padding。</p>
+<pre><code>def text2num(data, top):
+    result = []
+    for i in data:
+        tmp = []
+        for j in i.split(' '):
+            if j in top:
+                tmp.append(2)
+            else:
+                tmp.append(1)
+        if len(tmp)&lt;80:
+            tmp = tmp + (80-len(tmp))*[0]
+        else:
+            tmp = tmp[:80]
+        result.append(tmp)
+        tmp = []
+    return result
+</code></pre>
+<p>接下來需要將資料拆分成測試數據與訓練數據來驗證程式的準確率，為了讓資料平均分布我們要先將真實郵件與垃圾郵件分別依照比例分割。</p>
+<pre><code>def splitData(data, split_rate=0.8):
+    cnt = int(len(data)*split_rate)
+    train_data=data[:cnt]
+    test_data =data[cnt:]
+    
+    return train_data,test_data
+    
+f_train,f_test = splitData(fake_data)
+r_train,r_test = splitData(real_data)
+</code></pre>
+<p>並將分割的數據組合起來並給予他們label，且需要打亂資料以免造成overfitting(前面學到的都是0後面學到都是1)<br />
+def randomShuffle(x_batch,y_batch,seed=100):<br />
+random.seed(seed)<br />
+random.shuffle(x_batch)<br />
+random.seed(seed)<br />
+random.shuffle(y_batch)</p>
+<pre><code>return x_batch,y_batch
+</code></pre>
+<p>train_data,train_label = randomShuffle(f_train+r_train,[0 for i in range(len(f_train))]+[1 for i in range(len(r_train))])<br />
+test_data,test_label = randomShuffle(f_test + r_test,[0 for i in range(len(f_test))]+[1 for i in range(len(r_test))])</p>
+<p>這樣就完成資料前處理了</p>
+<h2 id="測試與比較"><a class="header" href="#測試與比較">測試與比較</a></h2>
+<p>首先我們先使用決策樹、亂數森林與極限梯度下降法這三個機器學習模型訓練。</p>
+<p>我們先快速的建立一下訓練的function</p>
+<pre><code>def train(train_data,train_label):
+    #決策樹模型
+    model_tree = DecisionTreeClassifier(criterion = 'entropy', max_depth=6, random_state=42)
+    #訓練
+    model_tree.fit(train_data, train_label)
+    #預測結果
+    y_hat_tree = model_tree.predict(train_data)
+    
+    #亂樹森林模型
+    model_RF = RandomForestClassifier(n_estimators=10, max_depth=None,min_samples_split=2, random_state=0)
+    #訓練
+    model_RF.fit(train_data, train_label)
+    #預測結果
+    Y_hat_RF = model_RF.predict(train_data)
+    
+    #極限梯度下降法模型
+    model_xgboost = XGBClassifier(n_estimators=100, learning_rate= 0.3)
+    #訓練
+    model_xgboost.fit(train_data, train_label)
+    #預測結果
+    Y_hat_xg = model_xgboost.predict(train_data)
+    
+    #找到label大小作為準確率的分母
+    n=np.size(train_label)
+    #顯示機率
+    print('Accuarcy decisionTree: {:.2f}%'.format(sum(np.int_(y_hat_tree==train_label))*100./n))
+    print('Accuarcy RandomForest: {:.2f}%'.format(sum(np.int_(Y_hat_RF==train_label))*100./n))
+    print('Accuarcy XgBoost: {:.2f}%'.format(sum(np.int_(predicted==train_label))*100./n))
+</code></pre>
+<p>在這邊可以看到，在機器學習中建立模型的方式非常的簡單，只需要三步驟:<code>宣告</code>、<code>訓練</code>、<code>看結果</code>，就能完成訓練，且速度與深度學習相比快了好幾倍，因為我們只是通過<strong>公式的運算</strong>，而不是訓練<strong>神經網路</strong>，那我們來看一下最後訓練的結果。</p>
+<pre><code>訓練:
+Accuarcy decisionTree: 88.31%
+Accuarcy RandomForest: 99.42%
+Accuarcy XgBoost: 98.95%
+測試:
+Accuarcy decisionTree: 88.98%
+Accuarcy RandomForest: 99.46%
+Accuarcy XgBoost: 99.46%
+</code></pre>
+<p>我們可以看到決策樹的效果相當的不好，最大的原因就是他每次規劃的路徑都是相同的這代表我們使用決策樹，最後的結果一定會overfitting。而亂樹森林則是以決策樹的方式加以改良，使用隨機抽取資料的方式，大幅增進最終的運算結果。今天的重頭戲xgoost可以看到在訓時準確率較低，但測試數據的準確率卻與亂樹森林相同，這是因我們們的資料比較單調以及數量較少的原因，若今天資料量較多xgboost能夠跌代計算出來的結果就會越準確，那差距就會與亂樹森林以及決策樹更大了。</p>
+<p>課程中的程式碼都能從我的github專案中看到<br />
+<a href="https://github.com/AUSTIN2526/learn-AI-in-30-days">https://github.com/AUSTIN2526/learn-AI-in-30-days</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day10.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day12.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day10.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day12.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

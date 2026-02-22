@@ -1,0 +1,377 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 07: 【day7】解析gz檔案 &amp; 使用Pytorch做CIFAR10影像辨識 (上) - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day7解析gz檔案--使用pytorch做cifar10影像辨識-上"><a class="header" href="#day7解析gz檔案--使用pytorch做cifar10影像辨識-上">【day7】解析gz檔案 &amp; 使用Pytorch做CIFAR10影像辨識 (上)</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-11 05:51:34<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10289155">https://ithelp.ithome.com.tw/articles/10289155</a></p>
+</blockquote>
+<hr />
+<p>我們前幾天用的深度學習函式庫是<code>Tensorflow作為後端</code>，並用<code>keras快速實現深度神經網路</code>，這樣的做法雖然可以簡易的完成一些簡易的AI程式，但無法實現複雜的神經網路及<code>預訓練模型(pre-trained model)</code>，所以通常會使用keras學習AI的基礎知識，再來使用Tensorflow或Pytorch作為最終的訓練工具，我這邊會推薦使用Pytorch，所以之後的課程都會以Pytorch為主</p>
+<h2 id="解析gz檔"><a class="header" href="#解析gz檔">解析gz檔</a></h2>
+<p>在我們<a href="https://ithelp.ithome.com.tw/articles/10288343">【day3】來辨識圖像-深度神經網路(Deep Neural Network)</a>的課程中，可以看到透過keras下載的資料集是一個無法打開的文件，須通過程式內部的解析才能了解內容，但如果我今天想要裡面的圖片存在自己的電腦裡或做為資料集使用呢?所以今天要來教如何解開gz檔，在獲得資料的同時也能讓你更理解圖片維度的意義。</p>
+<ul>
+<li>1.下載資料與安裝函式庫</li>
+<li>2.讀取資料並整理資料</li>
+<li>3.迴圈與儲存資料</li>
+</ul>
+<h3 id="下載資料與安裝函式庫"><a class="header" href="#下載資料與安裝函式庫">下載資料與安裝函式庫</a></h3>
+<p>首先我們先到下載資料<a href="https://www.cs.toronto.edu/~kriz/cifar.html">官方網站</a>裡面下載<a href="https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz">CIFAR-10 python version</a><br />
+<img src="images/20152236KpJBFn2Bvg.jpg" alt="" /></p>
+<p>接下來我們把gz檔解壓縮，並且創一個叫做data的資料夾將<code>data_batch_1</code>~<code>data_batch_5</code>與<code>test_batch</code>存放起來，並且在外面創建一個python檔案，此時我們的畫面應該會長這個樣子<br />
+<img src="images/20152236Kh4bLsfLU3.jpg" alt="" /></p>
+<p>接下來是安裝函式庫</p>
+<pre><code>pip install opencv-python
+</code></pre>
+<p>這樣子就可以開始寫程式啦</p>
+<h3 id="讀取資料並整理資料"><a class="header" href="#讀取資料並整理資料">讀取資料並整理資料</a></h3>
+<p>先來導入今天需要的函式庫</p>
+<pre><code>import pickle as pk
+import numpy as np
+import cv2
+import os
+</code></pre>
+<p>接下來看到官方網站中有教我們該如何打開gz的方式，我們先觀察這樣會回傳什麼樣的資料。</p>
+<pre><code>def unpickle(file):
+    with open(file, 'rb') as fo:
+        dict = pickle.load(fo, encoding='bytes')
+    return dict
+print(unpickle('data/data_batch_1'))
+----------------------------顯示----------------------------
+{b'batch_label': b'training batch 1 of 5',
+ b'labels': [label資料]
+ b'data': array([[圖片資料]], dtype=uint8)
+ b'filenames': [檔案名稱]}
+</code></pre>
+<p>可以看到這個資料了型態會是一個dict，每一個資料裡面都是一個陣列，我們只需要將labels作為資料夾分類使用filenames作為data的圖片的檔名就可以存檔....個鬼，在官方網站中有這樣一段話</p>
+<pre><code>3072 bytes are the values of the pixels of the image. The first 1024 bytes are the red channel values, the next 1024 the green, and the final 1024 the blue. The values are stored in row-major order, so the first 32 bytes are the red channel values of the first row of the image.
+(每張圖片共3072個資料，第一個1024個為紅色的通道的資料，接下來是1024個綠色通道，最後是1024個為藍色，每個資料都是按照優先順序排列的，因此前32個資料是第一行的紅色資料)。
+</code></pre>
+<p>在這裡就需要先說明一下電腦儲存影像的方式了首先我們可以知道三原色(紅R、綠G、藍B)可以組合出任一的顏色，所以我們只需要給予一個像素一組紅、綠、藍的資料再將這個資料組合在一起就可以變成一張圖片，在CIFAR10中圖片大小是32x32的，所以在文章中所提到的3072筆其實就是32x32x3。所以按照官方的意思我們在圖片1x1的位子就會是資料中的<code>第0筆(R)</code> <code>第1024筆(G)</code> <code>第2048筆(B)</code>並依照這個格式組成一張32x32的圖片。</p>
+<p>我們先改寫一下官方的範例讓我們更好拿到資料</p>
+<pre><code>def unpickle(file):
+    #開啟檔案視為2進位
+    with open(file, 'rb') as fo:
+        #解析開啟後的gz檔
+        gz_dict = pk.load(fo, encoding='bytes')
+    return gz_dict[b'labels'],gz_dict[b'filenames'],gz_dict[b'data']
+    
+labels,names, datas = unpickle(f'data/data_batch_1')
+</code></pre>
+<p>接下來將每筆data放入迴圈中並將通道分成R,G,B</p>
+<pre><code>for data in datas:
+    R = data[:1024]
+    G = data[1024:2048]
+    B = data[2048:3072]
+</code></pre>
+<p>最後我們把數據組成圖片一張圖片</p>
+<pre><code>img,tmp = [],[]
+#enumerate 計數程式用法與range(len(data))回傳值是(計數的值,資料)
+for cnt,(r,g,b) in enumerate(zip(R,G,B),1):
+    #創立一個像素(在這邊使用b,g,r是因為opencv存檔的格式是bgr)
+    tmp.append([b, g, r])
+    #每32個像素換下一列
+    if cnt % 32 == 0:
+        #將整行的像素存入陣列中
+        img.append(tmp)
+        tmp = []
+</code></pre>
+<h3 id="迴圈與儲存資料"><a class="header" href="#迴圈與儲存資料">迴圈與儲存資料</a></h3>
+<p>剛剛只讀取了data_batch_1這個檔案，但我們今天需要重複6次相同的動作，這時我們可以透過os.listdir讀取資料夾內容的名稱，並透過迴圈讀取資料。</p>
+<pre><code>#os.listdir('路徑')回傳值為[檔名1~檔名n]
+for path in os.listdir('data'):
+    labels,names, datas = unpickle(f'data/{path}')
+</code></pre>
+<p>為了儲存圖片可以使用makedirs創建資料夾，但makedirs在迴圈中就會因為創建過資料夾而導致程式錯誤，這邊就能使用try...except的語句做處理。</p>
+<pre><code>#嘗試做動作
+try:
+    os.makedirs(f'pic/train/{label}')
+    os.makedirs(f'pic/test/{label}')
+#若無法執行則會執行這裡
+except:
+    #不做任何事情
+    pass
+</code></pre>
+<p>運用opencv儲存剛剛整理好的影像</p>
+<pre><code>cv2.imwrite(path, np.array(img))
+</code></pre>
+<p>可以知道資料集需要分成測試數據集與訓練數據集，在CIFAR10中test_batch就是我們的訓練數據集，所以我們就能用if判斷該資料是訓練還是測試資料。</p>
+<pre><code>#測試數據集
+if path == 'test_batch':
+    #把資料存進剛剛建立好的資料夾中 過濾掉檔名裡面的'b'與'符號
+    cv2.imwrite(f'pic/test/{label}/{str(name)[2:-1]}', np.array(img))
+else:
+    cv2.imwrite(f'pic/train/{label}/{str(name)[2:-1]}', np.array(img))
+</code></pre>
+<p>最後讓我們把程式組合起來</p>
+<h2 id="完整程式碼"><a class="header" href="#完整程式碼">完整程式碼</a></h2>
+<pre><code>import pickle as pk
+import numpy as np
+import cv2
+import os
+
+def unpickle(file):
+    with open(file, 'rb') as fo:
+        gz_dict = pk.load(fo, encoding='bytes')
+        
+    return gz_dict[b'labels'],gz_dict[b'filenames'],gz_dict[b'data']
+
+for path in os.listdir('data'):
+    labels,names, datas = unpickle(f'data/{path}')
+    for label, name, data in zip(labels,names,datas):
+        try:
+            os.makedirs(f'pic/train/{label}')
+            os.makedirs(f'pic/test/{label}')
+        except:
+            pass
+            
+        R = data[:1024]
+        G = data[1024:2048]
+        B = data[2048:3072]
+        
+        img,tmp = [],[]
+        for cnt,(r,g,b) in enumerate(zip(R,G,B),1):
+            tmp.append([b, g, r])
+            if cnt % 32 == 0:
+                img.append(tmp)
+                tmp = []
+              
+        if path == 'test_batch':
+            cv2.imwrite(f'pic/test/{label}/{str(name)[2:-1]}', np.array(img))
+        else:
+            cv2.imwrite(f'pic/train/{label}/{str(name)[2:-1]}', np.array(img))
+</code></pre>
+<p>這樣子可以得到資料啦，明天先來說說GPU加速與再來開始pytorch的教學</p>
+<p>課程中的程式碼都能從我的github專案中看到<br />
+<a href="https://github.com/AUSTIN2526/learn-AI-in-30-days">https://github.com/AUSTIN2526/learn-AI-in-30-days</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day06.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day08.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day06.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day08.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

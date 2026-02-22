@@ -1,0 +1,606 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 13: 【day13】預訓練模型訓練 &amp; 應用- 使用OpenCV製作人臉辨識點名系統 (下) - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day13預訓練模型訓練--應用--使用opencv製作人臉辨識點名系統-下"><a class="header" href="#day13預訓練模型訓練--應用--使用opencv製作人臉辨識點名系統-下">【day13】預訓練模型訓練 &amp; 應用- 使用OpenCV製作人臉辨識點名系統 (下)</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-17 00:02:06<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10291607">https://ithelp.ithome.com.tw/articles/10291607</a></p>
+</blockquote>
+<hr />
+<p>還記得我們在使用LSTM或是CNN時都需要創建Data與Label並花費一些時間訓練我們的神經網路嗎?我相信在訓練神經網路時是會花費相當多的時間的，我們在訓練的這些資料可能只有5萬筆訓練完的時間大約1分鐘左右就可以完成。但如果我們所訓練的資料是幾百萬或幾千萬呢?那就算是3090ti訓練一個月都還跑不完，若我們很需要這一些的訓練的結果呢?那就只能去找看看有沒有人有相似的模型來修改，所以這時就有<code>遷移學習(Transfer Learning)</code>這種方式來幫助我們。</p>
+<h1 id="遷移式學習transfer-learning"><a class="header" href="#遷移式學習transfer-learning">遷移式學習(Transfer Learning)</a></h1>
+<p>首先我們知道，在訓練神經網路後，網路會學習到許多特徵資料與權重，以CNN神經網路為例，在捲積層與池化層會做特徵強化與擷取特徵的動作，最後通過全連接層計算結果。而在遷移式學習中就是將擷取特徵(進入全連接層前的資料)提取出來，並且通過我們任務的需求，去微調這些特徵的權重也就是<strong>用前一個模型的特徵，來找到我們想要的結果</strong>。</p>
+<h2 id="預訓練模型"><a class="header" href="#預訓練模型">預訓練模型</a></h2>
+<p>知道的遷移式學習的概念，是不是知道預訓練模型的名稱由來了?因為我們這個模型就被訓練過了，我們只需將這模型的特徵運用在我們的某層神經網路之內，或是對原始模型進行微調就能的到一個很好的結果。目前的預訓練模型分為兩種方式，分別是<code>基於特徵(feature-based)</code>與<code>微調(fine-tuen)</code>的方法。</p>
+<p><code>基於特徵(feature-based)</code>:這一種做法是使用一個經過大數據訓練過的模型結果(通常是特徵值)，套入到模型的其中一層，並且通過自己的資料集，不斷的調整與學習資料。舉個例子在我們<a href="https://ithelp.ithome.com.tw/articles/10289649">【day9】 讓電腦了解文字資料 &amp; 使用Pytorch做IMDB影評分析</a>中，使用到的神經網路embedding，在第9天我們是通過LSTM的文字前後關係，去更新embedding中的數值變化，若使用基於特徵的預訓練模型像是<code>ELMO</code>、<code>Word2Vec</code>，就能夠直接在embedding層當中導入這些已經被訓練好的特徵，這樣的效果就會比從0開始好非常的多。</p>
+<p><code>微調(fine-tuen)</code>:這種方法會保留原始模型，讓我們新增資料去調整這個原始模型<strong>各階層之間的權重</strong>，之後通過一個額外的接口(fine-tunr中主要是訓練這個接口)，來實現各種不同的<code>下游任務</code>，使一個模型來完成多種不同的結果，例如:BERT可以做問答機器人，也可以做分類器，也就是因為這種特性，下游任務的寫法也成為了另一個議題。</p>
+<h1 id="1實作辨識人臉"><a class="header" href="#1實作辨識人臉">1.實作辨識人臉</a></h1>
+<p>今天的目錄如下:</p>
+<ul>
+<li>1.VGG-16介紹</li>
+<li>2.下載資料與資料前處理</li>
+<li>3.創建資料集</li>
+<li>4.使用VGG-16模型並訓練</li>
+<li>5.VGG-16完整程式碼</li>
+</ul>
+<h2 id="vgg-16簡介"><a class="header" href="#vgg-16簡介">VGG-16簡介</a></h2>
+<p>在開始寫程式之前我們需要了解一下VGG-16內部構造。VGG-16最重要的概念就是使用大量的3x3捲積核來實現大捲積核的資料，例如:假設輸入為8、步長為1的CNN神經網路，5x5的捲積核最終輸出會是4(輸入-捲積核大小 + 1)，而3x3的捲積核，使用兩次輸出結果也會是4(第一次8-3+1=6 第二次6-3+1=4)，這代表一個5x5的捲積核可以通過2個3x3的捲積核來表達，這種做法的好處，就是在3x3中的捲積核<strong>保留了更多圖像的特徵值</strong>。<br />
+<img src="images/201522366dplIeOcb7.png" alt="" /></p>
+<blockquote>
+<p>來源:http://deanhan.com/2018/07/26/vgg16/</p>
+</blockquote>
+<p>可以看到在VGG16的架構圖中其實就是一個CNN的神經網路，但通過大量的數據與拆解捲積核的方式卻能大幅提升準確率</p>
+<h2 id="下載資料與資料前處理"><a class="header" href="#下載資料與資料前處理">下載資料與資料前處理</a></h2>
+<p>了解到VGG16的構造後，就可以開始使用Pytorch實作了，首先為了辨識這個人到底是誰，我們還需要一筆資料，也就是別人的人臉資料，來區分我們需要點名的對象，我們可以先到kaggle下載這些人臉的資料<a href="https://www.kaggle.com/datasets/mayumin8211/face-img?resource=download">點我下載</a>。</p>
+<p>之後我們創建以下的資料夾與檔案，並且開啟jupyter notebook來開始今天的實作<br />
+code<br />
+└─data(放資料的資料夾)<br />
+| ├─myface(放自己臉部的資料夾)<br />
+| └─other(放剛剛下載的圖片的資料夾)<br />
+└─VGG-16.ipynb(jupyter notebook的檔案)</p>
+<p>import今天會用到的函式庫</p>
+<pre><code>import torch
+import torch.nn as nn
+import torch.optim as opt
+import torch.nn.functional as F
+import torchvision as tv
+from torch.autograd import Variable
+from torch.utils.data import Dataset, DataLoader,random_split
+show = tv.transforms.ToPILImage()
+</code></pre>
+<p>接下來使用transforms.Compose()來創建要對圖片的操作，在這邊最重要的事情是我們需要將圖片縮放到224x224，因為這是VGG-16的輸入格式</p>
+<pre><code>transform = tv.transforms.Compose([
+    #轉成tensor格式
+    tv.transforms.ToTensor(),
+    #將短邊等比放大成224
+    tv.transforms.Resize(224),
+    #裁切多於的部分
+    tv.transforms.CenterCrop(224),
+    #正規化
+    tv.transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])])
+</code></pre>
+<p>這樣就能完成資料前處理了</p>
+<h2 id="創建資料集"><a class="header" href="#創建資料集">創建資料集</a></h2>
+<p>還記得前幾天最麻煩的事情嗎?就是使用class的方式建立dataset，在pytorch當中建立"圖片"的dataset其實很容易搞定，只需要將圖片放入到不同資料夾當中，就可以用tv.datasets.ImageFolder()一次性的將資料變成dataset，還能指定參數，去完成前處理的工作，這樣子做是不是能夠省下許多時間呢。</p>
+<pre><code>data = tv.datasets.ImageFolder('../data/',transform = transform)
+train_num = int(len(data)*0.7)
+test_num =len(data)-train_num
+train_set, test_set = torch.utils.data.random_split(data, [train_num,test_num])
+batch_size = 4
+train_loader = DataLoader(train_set, batch_size = batch_size,shuffle = True, num_workers = 0)
+test_loader = DataLoader(test_set, batch_size = batch_size, shuffle = True, num_workers = 0)
+</code></pre>
+<p>我們的資料變成dataset後會依照資料夾名稱排列來當作label，像是我們我們的兩個資料夾myface與other可以知道按照英文排序m比o還要早出現，所以myface的label就會為0，other就會是1，我們可以觀察一下的資料是否如同我們所想並且顯示照片。</p>
+<pre><code>#label轉換成名稱
+classes = {0:'myface', 1:'other'}
+#返回處理過後的圖片與label
+img, label = data[2000]
+顯示名稱
+print(classes[label])
+#還原正規化結果並顯示
+show(img*0.5+0.5)
+</code></pre>
+<p><img src="images/20152236rqFzi4uKKF.jpg" alt="" /></p>
+<h3 id="使用vgg-16模型並訓練"><a class="header" href="#使用vgg-16模型並訓練">使用VGG-16模型並訓練</a></h3>
+<p>pytorch中可以通過tv.models.vgg16函式，下載VGG-16的預訓練模型，之後只需要設定好優化器與損失函數就能開始訓練了。</p>
+<pre><code>model = tv.models.vgg16(pretrained=True).cuda()
+criterion = nn.CrossEntropyLoss().cuda()
+optimizer = opt.Adam(model.parameters(), lr=0.0001)
+</code></pre>
+<p>當我們不知道模型的架構時，可以使用print()來查看模型的疊法與詳細參數</p>
+<pre><code>print(model)
+----------------顯示----------
+VGG(
+  (features): Sequential(
+    (0): Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (1): ReLU(inplace=True)
+    (2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (3): ReLU(inplace=True)
+    (4): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (5): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (6): ReLU(inplace=True)
+    (7): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (8): ReLU(inplace=True)
+    (9): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (10): Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (11): ReLU(inplace=True)
+    (12): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (13): ReLU(inplace=True)
+    (14): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (15): ReLU(inplace=True)
+    (16): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (17): Conv2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (18): ReLU(inplace=True)
+    (19): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (20): ReLU(inplace=True)
+    (21): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (22): ReLU(inplace=True)
+    (23): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (24): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (25): ReLU(inplace=True)
+    (26): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (27): ReLU(inplace=True)
+    (28): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (29): ReLU(inplace=True)
+    (30): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False))
+  (avgpool): AdaptiveAvgPool2d(output_size=(7, 7))
+  (classifier): Sequential(
+    (0): Linear(in_features=25088, out_features=4096, bias=True)
+    (1): ReLU(inplace=True)
+    (2): Dropout(p=0.5, inplace=False)
+    (3): Linear(in_features=4096, out_features=4096, bias=True)
+    (4): ReLU(inplace=True)
+    (5): Dropout(p=0.5, inplace=False)
+    (6): Linear(in_features=4096, out_features=1000, bias=True))
+</code></pre>
+<p>最後訓練的部分基本上不會改變，所以我們直接把前幾天的程式抄過來，就能夠正常訓練了</p>
+<pre><code>epochs = 10
+for epoch in range(epochs):
+    train_loss = 0
+    train_acc = 0
+    train = tqdm(train_loader)
+
+    model.train()
+    for cnt,(data,label) in enumerate(train, 1):
+        data,label = data.cuda() ,label.cuda()
+        outputs = model(data)
+        loss = criterion(outputs, label)
+        _,predict_label = torch.max(outputs, 1)
+
+        optimizer.zero_grad()           
+        loss.backward()
+        optimizer.step()
+
+        train_loss += loss.item()
+        train_acc += (predict_label==label).sum()
+        train.set_description(f'train Epoch {epoch}')
+        train.set_postfix({'loss':float(train_loss)/cnt,'acc': float(train_acc)/(cnt*batch_size)*100})
+
+    model.eval()
+    test = tqdm(test_loader)
+    test_acc = 0
+    for cnt,(data,label) in enumerate(test, 1):
+        data,label = data.cuda() ,label.cuda()
+        outputs = model(data)
+        _,predict_label = torch.max(outputs, 1)
+        test_acc += (predict_label==label).sum()
+        test.set_description(f'test Epoch {epoch}')
+        test.set_postfix({'acc': float(test_acc)/cnt})
+</code></pre>
+<p>可以看到結果第一次訓練準確率就高達了96.8%，這是一個非常好的效果。</p>
+<pre><code>train Epoch 0: 100%|███████████████████████████████████████████| 264/264 [01:54&lt;00:00,  2.30it/s, loss=0.527, acc=92.8]
+test Epoch 0: 100%|████████████████████████████████████████████████████████| 113/113 [00:16&lt;00:00,  6.92it/s, acc=96.8]
+</code></pre>
+<p>訓練好了就能將我們數據集的權重保存下來之後連結上opencv了</p>
+<pre><code>torch.save(model.state_dict(), 'model_weights.pth')
+</code></pre>
+<h2 id="訓練完整程式碼"><a class="header" href="#訓練完整程式碼">訓練完整程式碼</a></h2>
+<pre><code>import torch
+import torch.nn as nn
+import torch.optim as opt
+import torch.nn.functional as F
+import torchvision as tv
+from torch.autograd import Variable
+from torch.utils.data import Dataset, DataLoader,random_split
+from tqdm import tqdm
+show = tv.transforms.ToPILImage()
+
+transform = tv.transforms.Compose([tv.transforms.ToTensor(),
+            tv.transforms.Resize(224),
+            tv.transforms.CenterCrop(224),                                
+            tv.transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+                               ])
+                               
+data = tv.datasets.ImageFolder('data/',transform = transform)
+train_num = int(len(data)*0.7)
+test_num =len(data)-train_num
+train_set, test_set = torch.utils.data.random_split(data, [train_num,test_num])
+
+batch_size = 16
+train_loader = DataLoader(train_set, batch_size = batch_size,shuffle = True, num_workers = 0)
+test_loader = DataLoader(test_set, batch_size = batch_size, shuffle = True, num_workers = 0)
+model = tv.models.vgg16(pretrained=True).cuda()
+criterion = nn.CrossEntropyLoss().cuda()
+optimizer = opt.Adam(model.parameters())
+
+epochs = 1
+for epoch in range(epochs):
+    train_loss = 0
+    train_acc = 0
+    train = tqdm(train_loader)
+
+    model.train()
+    for cnt,(data,label) in enumerate(train, 1):
+        data,label = data.cuda() ,label.cuda()
+        outputs = model(data)
+        loss = criterion(outputs, label)
+        _,predict_label = torch.max(outputs, 1)
+
+        optimizer.zero_grad()           
+        loss.backward()
+        optimizer.step()
+
+        train_loss += loss.item()
+        train_acc += (predict_label==label).sum()
+        train.set_description(f'train Epoch {epoch}')
+        train.set_postfix({'loss':float(train_loss)/cnt,'acc': float(train_acc)/(cnt*batch_size)*100})
+
+    model.eval()
+    test = tqdm(test_loader)
+    test_acc = 0
+    for cnt,(data,label) in enumerate(test, 1):
+        data,label = data.cuda() ,label.cuda()
+        outputs = model(data)
+        _,predict_label = torch.max(outputs, 1)
+        test_acc += (predict_label==label).sum()
+        test.set_description(f'test Epoch {epoch}')
+        test.set_postfix({'acc': float(test_acc)/(cnt*batch_size)*100})
+        
+torch.save(model.state_dict(), 'model_weights.pth')
+</code></pre>
+<p>是不是覺得少了很多pytorch的程式碼，因為我這次使用了快速創立資料的方式與預訓練模型，減少了建立dataset與創建model的步驟。接下來我們把model放入到opencv中吧。</p>
+<h1 id="2人臉辨識點名系統"><a class="header" href="#2人臉辨識點名系統">2.人臉辨識點名系統</a></h1>
+<p>我們使用了opencv來找到我們影像中的臉部，也使用了VGG-16預訓練模型來增加預測人臉的效果，那是時候將這兩個技術結合在一起了。</p>
+<ul>
+<li>1.建立初始環境</li>
+<li>2.將模型加入鏡頭並顯示結果</li>
+<li>3.VGG-16完整程式碼</li>
+</ul>
+<h2 id="建立初始環境"><a class="header" href="#建立初始環境">建立初始環境</a></h2>
+<p>我們一樣先從導入函式庫開始</p>
+<pre><code>import torchvision as tv
+import pandas as pd
+import torch
+import datetime
+import cv2
+</code></pre>
+<p>接下來把把模型、權重、點名表、臉部辨識器...等資料先載入進系統。</p>
+<pre><code>#需要辨識的人名(按照名稱排列)
+name = ['myface','other']
+#導入VGG-16模型
+model = tv.models.vgg16(pretrained=True).eval()
+#讀取訓練好的權重
+model.load_state_dict(torch.load('model_weights.pth'))
+#利用年月日創建資料
+excel_path = 'attend/' + datetime.datetime.now().strftime('%Y-%m-%d') + '.csv'  
+try:
+    df = pd.read_csv(excel_path, index_col="ID")
+except:
+    df = pd.DataFrame([[i,'未簽到'] for i in name],columns=['ID', '簽到日期'])
+    df.to_csv(excel_path, encoding='utf_8_sig', index=False)
+    df = pd.read_csv(excel_path, index_col="ID")
+
+#圖像正規化操作
+transform = tv.transforms.Compose([
+    tv.transforms.ToTensor(),
+    tv.transforms.Resize(224),
+    tv.transforms.CenterCrop(224),
+    tv.transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])]) 
+臉部辨識器
+classfier = cv2.CascadeClassifier(cv2.data.haarcascades +"haarcascade_frontalface_alt2.xml")
+</code></pre>
+<h2 id="將模型加入鏡頭並顯示結果"><a class="header" href="#將模型加入鏡頭並顯示結果">將模型加入鏡頭並顯示結果</a></h2>
+<p>在訓練時怎麼處理圖片，實際使用就需要用相同的方式，但因為圖片的維度是(3,224,224)，訓練時卻是使用(圖片數量,3,224,224)，所以需要再加入一個維度在第0維來解決這個問題。</p>
+<pre><code>face = transform(face)
+#新增維度並預測
+result = model(face.unsqueeze(0))
+</code></pre>
+<p>之後需要判斷這個人是否簽到完畢，如果有就不用再重新刷新時間了。最後我們在把使用者的ID放在畫面上</p>
+<pre><code>faceID = name[int(faceID[0])]
+if df.loc[faceID]['簽到日期']=='未簽到':
+    df.loc[faceID]['簽到日期'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    df.to_csv(excel_path,encoding='utf_8_sig')
+cv2.putText(frame,faceID ,(x - 30, y - 30),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,0,255),2)
+</code></pre>
+<p>一套人臉辨識點名系統，通常會將攝影機放置在一個固定的地方，並且需全天運轉，所以人臉辨識點名系統需要一個可以依照年月日不斷的創建excel的判斷式。</p>
+<pre><code>system_time = datetime.datetime.now().strftime('%H:%M:%S')
+if system_time =='00:00:00': 
+    excel_path = 'attend/' + datetime.datetime.now().strftime('%Y-%m-%d') + '.csv'
+    df = pd.DataFrame([[i,'未簽到'] for i in name],columns=['ID', '簽到日期'])
+    df.to_csv(excel_path, encoding='utf_8_sig', index=False)
+    df = pd.read_csv(excel_path)
+</code></pre>
+<p>最後我們把昨天的程式與今天的部分組合起來就能以下的效果<br />
+<img src="images/20152236NRZu9YgqyO.jpg" alt="" /></p>
+<h2 id="vgg-16版本完整程式碼"><a class="header" href="#vgg-16版本完整程式碼">VGG-16版本完整程式碼</a></h2>
+<pre><code>import torchvision as tv
+import pandas as pd
+import torch
+import datetime
+import cv2
+
+name = ['myface','other']
+model = tv.models.vgg16(pretrained=True).eval()
+model.load_state_dict(torch.load('model_weights.pth'))
+excel_path = 'attend/' + datetime.datetime.now().strftime('%Y-%m-%d') + '.csv'  
+transform = tv.transforms.Compose([
+    tv.transforms.ToTensor(),
+    tv.transforms.Resize(224),
+    tv.transforms.CenterCrop(224),
+    tv.transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])]) 
+try:
+    df = pd.read_csv(excel_path, index_col="ID")
+except:
+    df = pd.DataFrame([[i,'未簽到'] for i in name],columns=['ID', '簽到日期'])
+    df.to_csv(excel_path, encoding='utf_8_sig', index=False)
+    df = pd.read_csv(excel_path, index_col="ID")
+classfier = cv2.CascadeClassifier(cv2.data.haarcascades +"haarcascade_frontalface_alt2.xml")
+
+    
+cap = cv2.VideoCapture(0)
+while(not cap.isOpened()):
+    cap = cv2.VideoCapture(0)
+    
+cnt = 0
+classfier = cv2.CascadeClassifier(cv2.data.haarcascades +"haarcascade_frontalface_alt2.xml")
+
+while(True):
+    ret, frame = cap.read()
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    faceRects = classfier.detectMultiScale(gray, scaleFactor = 1.2, minNeighbors = 3, minSize = (32, 32))
+
+    if len(faceRects) &gt; 0:      
+        for (x, y, w, h) in faceRects:
+            cv2.rectangle(frame, (x - 10, y - 10), (x + w + 10, y + h + 10), (0,255,0), 2)
+            face = frame[y - 10: y + h + 10, x - 10: x + w + 10]
+            face = transform(face)
+            result = model(face.unsqueeze(0))
+            _,faceID = torch.max(result,1)
+            faceID = name[int(faceID[0])]
+            cv2.putText(frame,faceID ,(x - 30, y - 30),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,0,255),2)
+            
+            if df.loc[faceID]['簽到日期']=='未簽到':
+                df.loc[faceID]['簽到日期'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                df.to_csv(excel_path,encoding='utf_8_sig')
+                    
+    if cv2.waitKey(1) == ord('q'):
+        break
+    
+    system_time = datetime.datetime.now().strftime('%H:%M:%S')
+    if system_time =='00:00:00': 
+        excel_path = 'attend/' + datetime.datetime.now().strftime('%Y-%m-%d') + '.csv'
+        df = pd.DataFrame([[i,'未簽到'] for i in name],columns=['ID', '簽到日期'])
+        df.to_csv(excel_path, encoding='utf_8_sig', index=False)
+        df = pd.read_csv(excel_path, index_col="ID")
+        
+    cv2.imshow('live', frame)
+
+cap.release()
+cv2.destroyAllWindows()
+</code></pre>
+<h1 id="後話更好的辨識方法googl-facenet"><a class="header" href="#後話更好的辨識方法googl-facenet">後話:更好的辨識方法Googl FaceNet</a></h1>
+<p>我們在使用VGG16的時候，新增或移除資料時都必須重新fine-tune模型，若有人離職或入職就須重新訓練程式，這樣子是很麻煩的事情，所以這時候就有方法叫做<code>Triplet Loss</code>，這一種loss function是將圖片的特徵映射到歐式距離中，選取特徵最不相像的圖片與最像的圖片同時進行特徵訓練來改進模型，這能夠使我們只需使用一張照片來創建臉部資料庫，不過我就不多講解這技術的應用了，有興趣的可以到我的git專案中看到Google的人臉辨識寫法<a href="https://github.com/AUSTIN2526/Facial-recognition-auto-login-system">點我</a></p>
+<p>課程中的程式碼都能從我的github專案中看到<br />
+<a href="https://github.com/AUSTIN2526/learn-AI-in-30-days">https://github.com/AUSTIN2526/learn-AI-in-30-days</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day12.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day14.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day12.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day14.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

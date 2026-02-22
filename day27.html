@@ -1,0 +1,544 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 27: 【day27】手刻神經網路來解決XOR問題-多層感知器 (Multilayer perceptron) (下) - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day27手刻神經網路來解決xor問題-多層感知器-multilayer-perceptron-下"><a class="header" href="#day27手刻神經網路來解決xor問題-多層感知器-multilayer-perceptron-下">【day27】手刻神經網路來解決XOR問題-多層感知器 (Multilayer perceptron) (下)</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-10-01 20:49:22<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10302158">https://ithelp.ithome.com.tw/articles/10302158</a></p>
+</blockquote>
+<hr />
+<h1 id="手刻多層感知器"><a class="header" href="#手刻多層感知器">手刻多層感知器</a></h1>
+<p>今天的目錄如下:</p>
+<p>1.建立與初始化資料<br />
+2.架構神經網路模型<br />
+3.更新參數<br />
+4.顯示結果</p>
+<h2 id="建立與初始化資料"><a class="header" href="#建立與初始化資料">建立與初始化資料</a></h2>
+<p>與昨天相同我會把它寫成class的形式，因為是多層感知器，我們需要根據資料設定每一層的參數，在這裡我們先設定一下所有邏輯閘的資料集。</p>
+<pre><code>x = [[0.,0.], [0.,1.], [1.,0.], [1.,1.]]
+x = torch.tensor(x)
+
+XOR_y = torch.tensor([[0.], [1.], [1.], [0.]])
+AND_y = torch.tensor([[0.], [0.], [0.], [1.]])
+OR_y = torch.tensor([[0.], [1.], [1.], [1.]])
+</code></pre>
+<p><img src="images/20152236F8WLOgHtHE.jpg" alt="" /><br />
+接下來要建立上圖的神經網路架構，所以需要來了解每一層的維度大小，首先輸入是(4,2)，進入到隱藏層則要縮到(2,2)，並且要完成<code>y=wx+b</code>這一個公式，根據上圖可以知道所有的隱藏層輸入都是h=w1x1+w2x2+b，只是每一個輸入的w1、w2、b都不相同而已。</p>
+<p>所以我們將公式轉換為矩陣格式y = WX+b中的<code>W、b</code>必須符合輸入大小，所以<code>輸入到隱藏層W是(2,2)</code>，<code>隱藏層到輸出則是(2,1)</code>，最後寫在__init__裡就可以隨時調整各層的神經元數量了。</p>
+<pre><code>class model:
+    def __init__(self,inputs_shape , hidden_shape ,output_shape):
+        #requires_grad=True 表示之後能夠被反向傳播(pytorch用法)
+        #numpu改用np.random.uniform(size=(input_shape, hidden_shape))
+        self.w1 = torch.randn(inputs_shape, hidden_shape, requires_grad=True)
+        self.w2 = torch.randn(hidden_shape, output_shape, requires_grad=True)
+        
+        self.b1 = torch.randn(1,hidden_shape, requires_grad=True)
+        self.b2 = torch.randn(1,output_shape, requires_grad=True)
+        
+        self.loss = []
+        self.mse = MSELoss()
+</code></pre>
+<h2 id="架構神經網路模型"><a class="header" href="#架構神經網路模型">架構神經網路模型</a></h2>
+<p>昨天說到神經網路的三個步驟<code>前向傳播</code>、<code>反向傳播計算梯度</code>、<code>梯度下降更新數值</code>，不過在前向傳播前我們需要定義激勵函數，將我們每一層的結果都變成非線性的結果。</p>
+<pre><code>def sigmoid(self, x):
+    #numpy改用np.exp
+    return 1 / (1 + torch.exp(-x))
+</code></pre>
+<p>接下來開始定義前向傳播的公式wx+b，這邊用self的寫法是因為我們在反向傳播時還需要用到這些數值</p>
+<pre><code>def forward(self,x):
+        #pytorch中@代表矩陣相乘用*只會代表相同index的數字相乘
+        #numpy須將@改用dot EX:np.dot(x, self.w1)
+        #輸入到隱藏
+        h = x @ self.w1 + self.b1
+        h_out = self.sigmoid(h)
+        
+        #隱藏到輸出
+        output = h_out @ self.w2 + self.b2
+        outpu_fin = self.sigmoid(output)
+        
+        return outpu_fin
+</code></pre>
+<h2 id="更新參數"><a class="header" href="#更新參數">更新參數</a></h2>
+<h3 id="pytorch"><a class="header" href="#pytorch">pytorch</a></h3>
+<p>在pytorch當中計算梯度非常簡單，因為只需設定了<code>requires_grad=True</code>，就能夠直接使用<code>.grad</code>將梯度計算完畢。pytorch也能夠使用<code>.backward()</code>快速的做反向傳播更新梯度數值，這個我們先前用過了很多次只是我們不知道這個function的實際含意。</p>
+<pre><code>def updata(self, loss, lr):
+    loss.backward()
+    with torch.no_grad():
+        self.w1 -= self.w11.grad * lr            
+        self.w2 -= self.w21.grad * lr
+
+        self.b2 -= self.b2.grad * lr
+        self.b1 -= self.b1.grad * lr
+
+        self.w11.grad.zero_()
+        self.w21.grad.zero_()
+
+        self.b1.grad.zero_()
+        self.b2.grad.zero_()
+</code></pre>
+<h3 id="numpy"><a class="header" href="#numpy">numpy</a></h3>
+<p>但numpy更新梯度的方式就很困難了，因為在這裡我們必須對所有要更新的數值做偏微分，而這個過程會非常的複雜。</p>
+<p>經過昨天<a href="https://ithelp.ithome.com.tw/articles/10301417">【day26】手刻神經網路來解決XOR問題-多層感知器 (Multilayer perceptron) (上)</a>的課程中學習到的梯度計算方式，我們能夠知道若要計算出隱藏層的梯度，需要對<code>計算出的loss值</code>與<code>輸入到隱藏層(w1)</code>的資料做偏微分(O是預測輸出，W是輸入到隱藏層的資料、i是輸入、j連接到第幾個隱藏層神經元)<br />
+<img src="images/201522360BHXlMguiB.jpg" alt="" /></p>
+<p>接下來分解∂O/∂w1<br />
+<img src="images/20152236SCwy5BKzmG.jpg" alt="" /></p>
+<p>其中∂σ(w2)/∂w2)為sigmoid函數的導數<code>f'(x) = f(x)(1 - f(x))</code>。<br />
+輸入則是<code>∂w2/∂w1 = xn</code>(W = wx+b)<br />
+<img src="images/20152236aqT9jAYaM3.png" alt="" /></p>
+<p>我們就會得到以下公式，這公式也代表<code>(預測輸出-實際值)*delsigmoid(最後的輸出)*最後的權重*輸入</code><br />
+<img src="images/20152236tmreXHPvQ0.jpg" alt="" /></p>
+<p>接下來計算好梯度後，就與pytorch更新梯度的方式相同了。</p>
+<pre><code>def updata(self, x, y, lr):
+        loss = 0.5 * (y - self.output_final) ** 2
+        self.loss.append(np.sum(loss))
+        error_term = (self.output_final - y)
+
+        #隱藏層梯度(注意這裡還多一層simgoid)
+        grad1 = x.T @ (((error_term * self.delsigmoid(self.output_final)) * self.w2.T) * self.delsigmoid(self.h1_out))
+
+        #輸出層梯度
+        grad2 = self.h1_out.T @ (error_term * self.delsigmoid(self.output_final))
+
+        self.w1 -= lr * grad1
+        self.w2 -= lr * grad2
+        self.b1 -= np.sum(lr * ((error_term * self.delsigmoid(self.output_final)) * self.w2.T) * self.delsigmoid(self.h1_out), axis=0)
+        self.b2 -= np.sum(lr * error_term * self.delsigmoid(self.output_final), axis=0)
+        
+def delsigmoid(self, x):
+        return x * (1 - x)
+</code></pre>
+<h2 id="顯示結果"><a class="header" href="#顯示結果">顯示結果</a></h2>
+<p>最後只要測試結果是否正確，以及繪製出loss折線圖就大功告成了</p>
+<pre><code>def predict(self, x):
+        #pytorch需要加入torch.no_grad
+        with torch.no_grad():
+            return self.forward(x) &gt;= 0.5 
+        
+
+    def show(self, title):
+        plt.plot(self.loss)
+        plt.title(title)
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.show()
+        
+        print(f'第一層W:{self.w11.tolist()} \n第二層W:{self.w21.tolist()} \n第一層?:{self.b1.tolist()} \n第二層?{self.b2.tolist()}')
+        
+model.show()
+</code></pre>
+<p><img src="images/20152236y6yOq7awgC.jpg" alt="" /></p>
+<p>測試XOR結果</p>
+<pre><code>model.predict(x)
+------------------------顯示------------------------
+array([[ True],
+       [False],
+       [False],
+       [ True]])
+</code></pre>
+<p>今天的程式比單層神經網路還要複雜一點，最主要的原因還是反向傳播的計算，如果都了解了這些計算方式後，我相信手刻出其他神經網路就只是時間早晚的問題了。</p>
+<h2 id="完整程式碼pytorch"><a class="header" href="#完整程式碼pytorch">完整程式碼(pytorch)</a></h2>
+<pre><code>import torch
+from torch.nn import MSELoss
+import matplotlib.pyplot as plt
+
+class model:
+    def __init__(self,inputs_shape , hidden_shape ,output_shape):
+        self.w1 = torch.randn(inputs_shape, hidden_shape, requires_grad=True)
+        self.w2 = torch.randn(hidden_shape, output_shape, requires_grad=True)
+        
+        self.b1 = torch.randn(1,hidden_shape, requires_grad=True)
+        self.b2 = torch.randn(1,output_shape, requires_grad=True)
+        self.loss = []
+        self.mse = MSELoss()
+        
+
+    def fit(self, x, y , lr=0.2, epoch=200):
+        for i in range(epoch):
+            output = self.forward(x)
+            loss = self.mse(output, y)
+            self.loss.append(float(loss))
+            self.updata(loss,lr)
+            
+    
+    
+    def updata(self, loss, lr):
+        loss.backward()
+        with torch.no_grad():
+            self.w1 -= self.w1.grad * lr            
+            self.w2 -= self.w2.grad * lr
+            
+            self.b2 -= self.b2.grad * lr
+            self.b1 -= self.b1.grad * lr
+
+            self.w1.grad.zero_()
+            self.w2.grad.zero_()
+
+            self.b1.grad.zero_()
+            self.b2.grad.zero_()
+            
+    def forward(self,x):
+        h = x @ self.w1 + self.b1
+        h_out = self.sigmoid(h)
+        
+        output = h_out @ self.w2 + self.b2
+        outpu_fin = self.sigmoid(output)
+        
+        return outpu_fin
+    
+    def sigmoid(self, x):
+        return 1 / (1 + torch.exp(-x))
+    
+    def predict(self, x):
+        with torch.no_grad():
+            return self.forward(x) &gt;= 0.5 
+        
+
+    def show(self, title):
+        plt.plot(self.loss)
+        plt.title(title)
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.show()
+        
+        print(f'第一層W:{self.w1.tolist()} \n第二層W:{self.w2.tolist()} \n第一層?:{self.b1.tolist()} \n第二層?{self.b2.tolist()}')
+</code></pre>
+<pre><code>x = [[0.,0.], [0.,1.], [1.,0.], [1.,1.]]
+x = torch.tensor(x)
+
+XOR_y = torch.tensor([[0.], [1.], [1.], [0.]])
+AND_y = torch.tensor([[0.], [0.], [0.], [1.]])
+OR_y = torch.tensor([[0.], [1.], [1.], [1.]])
+
+XOR_model = model(2, 2, 1)
+AND_model = model(2, 2, 1)
+OR_model = model(2, 2, 1)
+
+XOR_model.fit(x, XOR_y, 0.2, 5000)
+AND_model.fit(x, AND_y,0.2, 5000)
+OR_model.fit(x, OR_y,0.2, 5000)
+</code></pre>
+<pre><code>XOR_model.show('XOR')
+AND_model.show('AND')
+OR_model.show('OR')
+</code></pre>
+<pre><code>print(XOR_model.predict(x),AND_model.predict(x),OR_model.predict(x),sep='\n\n')
+</code></pre>
+<h2 id="完整程式碼numpy"><a class="header" href="#完整程式碼numpy">完整程式碼(numpy)</a></h2>
+<pre><code>import numpy as np
+
+class model:
+    def __init__(self, input_shape, hidden_shape, output_shape):
+     
+
+        self.w1 = np.random.uniform(size=(input_shape, hidden_shape))
+        self.w2 = np.random.uniform(size=(hidden_shape, output_shape))
+
+        self.b1 = np.random.uniform(size=(1, hidden_shape))
+        self.b2 = np.random.uniform(size=(1, output_shape))
+
+        self.loss = []
+
+    def updata(self, x, y, lr):
+        loss = 0.5 * (y - self.output_final) ** 2
+        self.loss.append(np.sum(loss))
+        error_term = (self.output_final - y)
+
+        #隱藏層梯度(注意這裡還多一層simgoid)
+        grad1 = x.T @ (((error_term * self.delsigmoid(self.output_final)) * self.w2.T) * self.delsigmoid(self.h1_out))
+
+        #輸出層梯度
+        grad2 = self.h1_out.T @ (error_term * self.delsigmoid(self.output_final))
+
+      
+
+        self.w1 -= lr * grad1
+        self.w2 -= lr * grad2
+        self.b1 -= np.sum(lr * ((error_term * self.delsigmoid(self.output_final)) * self.w2.T) * self.delsigmoid(self.h1_out), axis=0)
+        self.b2 -= np.sum(lr * error_term * self.delsigmoid(self.output_final), axis=0)
+
+    def sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
+
+    def delsigmoid(self, x):
+        return x * (1 - x)
+
+    def forward(self, x):
+
+        self.h1 = np.dot(x, self.w1) + self.b1
+        self.h1_out = self.sigmoid(self.h1)
+
+        self.output = np.dot(self.h1_out, self.w2) + self.b2
+        self.output_final = self.sigmoid(self.output)
+
+        return self.output_final
+
+    def predict(self, x):
+        return self.forward(x) &gt;= 0.5
+
+    def fit(self,x,y,lr,epoch):
+        for _ in range(epoch):
+            self.forward(x)
+            self.updata(x,y,lr)
+            
+    def show(self, title):
+        plt.plot(self.loss)
+        plt.title(title)
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.show()
+
+        print(f'第一層W:{self.w1.tolist()} \n第二層W:{self.w2.tolist()} \n第一層?:{self.b1.tolist()} \n第二層?{self.b2.tolist()}')
+</code></pre>
+<pre><code>x = np.array([[0,0], [0,1], [1,0], [1,1]])
+
+XOR_y = np.array([[0], [1], [1], [0]])
+AND_y =np.array([[0], [0], [0], [1]])
+OR_y = np.array([[0], [1], [1], [1]])
+
+XOR_model = model(2, 2, 1)
+AND_model = model(2, 2, 1)
+OR_model = model(2, 2, 1)
+
+XOR_model.fit(x, XOR_y, 0.2, 5000)
+AND_model.fit(x, AND_y,0.2, 5000)
+OR_model.fit(x, OR_y,0.2, 5000)
+</code></pre>
+<pre><code>XOR_model.show('XOR')
+AND_model.show('AND')
+OR_model.show('OR')
+</code></pre>
+<pre><code>print(XOR_model.predict(x),AND_model.predict(x),OR_model.predict(x),sep='\n\n')
+</code></pre>
+<p>課程中的程式碼都能從我的github專案中看到<br />
+<a href="https://github.com/AUSTIN2526/learn-AI-in-30-days">https://github.com/AUSTIN2526/learn-AI-in-30-days</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day26.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day28.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day26.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day28.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,611 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 08: 【day8】解析gz檔案 &amp; 使用Pytorch做CIFAR10影像辨識 (下) - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day8解析gz檔案--使用pytorch做cifar10影像辨識-下"><a class="header" href="#day8解析gz檔案--使用pytorch做cifar10影像辨識-下">【day8】解析gz檔案 &amp; 使用Pytorch做CIFAR10影像辨識 (下)</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-12 03:48:00<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10289426">https://ithelp.ithome.com.tw/articles/10289426</a></p>
+</blockquote>
+<hr />
+<h2 id="為何要使用gpu加速"><a class="header" href="#為何要使用gpu加速">為何要使用GPU加速</a></h2>
+<p>在實作CNN與LSTM時的因為資料量較小只需用到CPU運算，但後續課程中的資料會越來越多，所以運算時間會越來越久，這時就會使用到GPU去加速程式。</p>
+<p>我們先了解GPU為何能夠加速程式就要先知道GPU的構造，GPU是由許多的<code>乘數累加器（Multiply Accumulate)</code>組成，這種運算的動作是將資料相乘後加上累加器後再存入累加器(累加器1 &lt;- 累加器1 + 資料1x資料2)，而在神經網路中可以<code>將矩陣放入累加器中運算</code>，且在乘數累加器中<code>只需使用一個指令</code>就能完成上述的動作，從而提高運算的速度，簡單來說就是<code>GPU能夠用簡短的方式傳輸大量資料</code>。</p>
+<h2 id="cifar10影像辨識"><a class="header" href="#cifar10影像辨識">CIFAR10影像辨識</a></h2>
+<p>今天的課程會有許多<a href="https://ithelp.ithome.com.tw/articles/10288343">【day3】來辨識圖像-深度神經網路(Deep Neural Network)</a>與<a href="https://ithelp.ithome.com.tw/articles/10288351">【day4】找到圖片的特徵-捲積神經網路(Convolutional neural network)</a>的知識與一些延伸，若是有不了解的地方可以回顧一下。</p>
+<ul>
+<li>1.Pytorch版本安裝</li>
+<li>2.函式庫介紹與安裝</li>
+<li>3.創建資料集</li>
+<li>4.架構神經網路</li>
+<li>5.訓練神經網路</li>
+</ul>
+<h3 id="pytorch版本安裝"><a class="header" href="#pytorch版本安裝">Pytorch版本安裝</a></h3>
+<p>我們前幾天再安裝函式庫都是使用<code>pip install 函式庫名稱</code>安裝程式，但使用這種方式安裝pytorch卻會發現是CPU版本，那麼該怎麼安裝GPU版本呢?</p>
+<p>先到Pytorch的<a href="https://pytorch.org/">官方網站</a>會看到INSTALL PYTORCH，之後選擇安裝的方式(pip)與cuda版本(基本上都是11.3)，就會得到一串pip的指令<br />
+<img src="images/20152236t3zEUX9ywd.jpg" alt="" /></p>
+<p>之後輸入就安裝完畢了</p>
+<pre><code>pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113
+</code></pre>
+<h3 id="函式庫介紹與安裝"><a class="header" href="#函式庫介紹與安裝">函式庫介紹與安裝</a></h3>
+<pre><code>#如果到現在的課程都有跟上，那應該只會缺少tqdm函式庫
+pip install tqdm
+</code></pre>
+<p>接下來介紹一下今天會使用的函式庫</p>
+<pre><code>#系統相關操作
+import os
+#深度學習函式庫
+import torch
+#神經元架構與損失函數
+import torch.nn as nn
+#激勵函數
+import torch.nn.functional as F
+#優化器
+import torch.optim as optim
+#圖像前處理
+import torchvision.transforms as transforms
+#矩陣操作
+import numpy as np
+#圖像操作
+from cv2 import imread
+#創建資料集
+from torch.utils.data import Dataset, DataLoader
+#顯示進度條
+from tqdm import tqdm
+</code></pre>
+<h3 id="創建資料集"><a class="header" href="#創建資料集">創建資料集</a></h3>
+<p>我們前幾天的實作都是先將資料放入一個array中，再將array給予神經網路去運算，但是在pytorch中不會使用這種方式，因為pytorch沒辦法像keras那樣指定<code>batch size</code>與<code>epoch</code>，所以在pytorch中會先將變成dataset後再轉換成dataloader，才能夠指定batch size等參數，我們先看一下pytorch創建dataset的方式。</p>
+<pre><code>#繼承Dataset這一個class(需要繼承pytorch設定好的class並新增自己的資料)
+class dataset(Dataset):
+    #初始化資料的地方
+    def __init__(self,data):
+      #創建資料的地方
+      
+    #每次訓練時會通過__getitem__取得我們需要訓練的資料
+    def __getitem__(self,index):
+       #訓練當前的index與資料
+       
+    #判斷資料的大小
+    def __len__(self):
+        #判斷index的上限
+        return len(self.data)
+</code></pre>
+<p>在這邊需要注意若我們需要的處理資料(讀檔、正規化)，需要在<code>init</code>內完成，而不是在<code>getitem</code>裡面，因為pytorch在訓練的時候會從getitem這一個function裡取資料，如果寫在裡面會使每取一筆資料，就需要重新處理一次，這樣子會導致程式訓練的時間變得更久。</p>
+<p>若使用GPU訓練的人要注意處理資料時千萬不要在建立資料時，將資料放入GPU中處理，例如:</p>
+<pre><code>def __init__(self,data):
+      #cuda()會將資料放入顯卡
+      self.data = data.cuda()
+</code></pre>
+<p>這樣子會將所有的資料放入顯卡當中，且<strong>不會釋放</strong>，若是要將資料放入GPU中，應先將資料變成dataloader的形式再使用cuda()放入到GPU當中。</p>
+<p>接下來開始處理昨天解析出來的CRFAR10圖像，透過昨天學習到的listdir讀取圖片並放到list當中。</p>
+<pre><code>data = []
+for label in os.listdir(path):
+    for pic in os.listdir(path + '/' + label):
+        #cv2.imread(path)可以將圖片轉換為array
+        cv_pic = imread(f'{path}/{label}/{pic}')
+        data.append([cv_pic, int(label)])
+</code></pre>
+<p>之後需要對圖片正規化，這裡可以利用<code>transforms.Compose()</code>定義我們想要做的操作。</p>
+<pre><code>#將資料轉化成Tensor後Normalize
+transform = transforms.Compose([transforms.ToTensor(),
+                                transforms.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5))
+                               ])
+</code></pre>
+<p>這樣就可以把transform做為一個function使用了</p>
+<pre><code>transform(data)
+</code></pre>
+<p>我們將整個程式組合起來，這樣就可以創建資料集了</p>
+<pre><code>class CRFAR10(Dataset):
+    def __init__(self, path, transform):
+        self.data = []
+        for label in os.listdir(path):
+            for pic in os.listdir(path + '/' + label):
+                cv_pic = imread(f'{path}/{label}/{pic}')
+                self.data.append([cv_pic, int(label)])
+    
+    def __getitem__(self,index):
+        datas = transform(self.data[index][0])
+        labels = torch.tensor(self.data[index][1])
+        return datas, labels
+    
+    def __len__(self):
+        return len(self.data)
+        
+transform = transforms.Compose([transforms.ToTensor(),
+                                transforms.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5))
+                               ])
+                               
+train_set = CRFAR10(r'pic/train/', transform)
+test_set = CRFAR10(r'pic/test/', transform)
+train_loader = DataLoader(train_set, batch_size = 128,shuffle = True, num_workers = 0)
+test_loader = DataLoader(test_set, batch_size = 128, shuffle = True, num_workers = 0)
+</code></pre>
+<h3 id="架構神經網路"><a class="header" href="#架構神經網路">架構神經網路</a></h3>
+<p>先來看pytorch中該怎麼架構神經網路的格式。我們需要在init定義<code>神經網路的種類</code>與<code>每層的輸入大小</code>，並且使用forward來執行動作。</p>
+<pre><code>#繼承nn.Module
+class CNN(nn.Module):
+    def __init__(self):
+        #呼叫nn.Module裡面init的資料
+        super().__init__()
+        #定義神經網路
+
+    def forward(self, x):
+        #定義操作
+</code></pre>
+<p>知道格式後，就可以來架構神經網路了，今天要的網路構造如下:</p>
+<pre><code>捲積層1-&gt;池化層-&gt;捲積層2-&gt;池化層-&gt;全連接層 (CNN)
+</code></pre>
+<p>這代表需要建立<code>2個CNN</code>、<code>1個池化層</code>與<code>n個全連接層</code>我們先看到官方說明:</p>
+<blockquote>
+<p>torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros', device=None, dtype=None)</p>
+</blockquote>
+<p>官方文件告訴我們在CNN中需要定義三個參數<code>(in_channels, out_channels, kernel_size)</code>，在這之中輸入是唯一需要知道的參數，在CRFAR10資料集中圖片是彩色的，這代表我們的<code>in_channels</code>會是3(RGB)，<code>out_channels</code>與<code>kernel_size</code>我們需要通過多次測試與經驗，才能知道最佳的結果，我們可以先隨便設定一個值(這邊先設定out_channels = 6與kernel_size = 5)。</p>
+<pre><code>self.conv1 = nn.Conv2d(3, 6, 5)
+</code></pre>
+<p>接下來設定第二層CNN神經網路(上層設定的out_channels是6，所以我們這層的in_channels一定要是6)</p>
+<pre><code>self.conv2 = nn.Conv2d(6, 16, 5)
+</code></pre>
+<p>然後我們來看一下池化層的說明:</p>
+<blockquote>
+<p>torch.nn.MaxPool2d(kernel_size, stride=None, padding=0, dilation=1, return_indices=False, ceil_mode=False)</p>
+</blockquote>
+<p>這層是做特徵強化只會縮小圖片大小，所以不會影響到in_channels，所以可以隨意的設定kernel_size</p>
+<pre><code>self.pool = nn.MaxPool2d(2, 2)
+</code></pre>
+<p>接下來就會比較困難了，因為要進入到全連接層之前需要將維度攤平，所以我們要先計算最後一層的大小，我們知道輸入的大小是<code>3x32x32</code>的圖像，在經過了第一層CNN之後<code>in_channels = 3</code> 會變成<code>out_channels = 6</code>，那32x32會變成什麼呢?這邊我們就需要套用到CNN參數計算的方式<code>(長或寬 + 2*(padding) - 捲積核) / 步長 + 1</code>，我們將第一層的數據套用到公式裡面<code>(32 + 2*0 - 5) / 1 + 1 = 28(padding預設是0)</code>，所以經過第一層後我們的矩陣大小會變成<code>6x28x28</code>，在將矩陣放入池化層中(2x2)得到28/2=14，以此類推。最後會得到<code>16x5x5</code>的結果。</p>
+<pre><code>(3*32*32)捲積層1-&gt;(6*28*28)池化層-&gt;(6*14*14)捲積層2-&gt;(16*10*10)池化層-&gt;(16*5*5)全連接層(輸出10)
+</code></pre>
+<p>計算完之後就可以設定全連接層的參數</p>
+<pre><code>self.fc1 = nn.Linear(16 * 5 * 5, 120)
+self.fc2 = nn.Linear(120, 84)
+#最後輸出要為10(10分類)
+self.fc3 = nn.Linear(84, 10)
+</code></pre>
+<p>這樣就建立好神經網路的架構了</p>
+<pre><code>def __init__(self):
+        super().__init__()
+        #捲積層1
+        self.conv1 = nn.Conv2d(3, 6, 5)
+        #捲積層2
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        #池化層
+        self.pool = nn.MaxPool2d(2, 2)
+        #全連接層
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
+</code></pre>
+<p>接下來要定義這些神經網路的使用方式(攤平資料、激勵函數等計算)</p>
+<pre><code>def forward(self, x):
+    #第一層使用激勵函數relu計算CNN神經網路1後丟給池化層 input(3,32,32) output(6,14,14)
+    x = self.pool(F.relu(self.conv1(x)))
+    #第二層使用激勵函數relu計算CNN神經網路2後丟給池化層 input(6,14,14) output(16,5,5)
+    x = self.pool(F.relu(self.conv2(x)))
+    #將資料攤平
+    x = x.view(x.size(0),-1)
+    #放入全連接層
+    x = F.relu(self.fc1(x))
+    x = F.relu(self.fc2(x))
+    x = self.fc3(x)
+    return x
+</code></pre>
+<p>可以看到在pytorch建立神經網路的方式明顯比keras複雜很多，在keras中只需要定義輸入與激勵函數就能輕鬆建立神經網路，而pytorch卻需要計算每層的輸入與輸出，並且還要定義使用的方法，但也因為這樣子的<strong>操作更加的自由</strong>，使我們能夠做到keras無法做到的事情。</p>
+<h3 id="訓練神經網路"><a class="header" href="#訓練神經網路">訓練神經網路</a></h3>
+<p>終於來到今天的最後一步了，架構好神經網路後當然是要訓練它囉，先來看一下最基本的範例。</p>
+<pre><code>for data,label in dataloader:
+    #將訓練資料放入model裡面做預測
+    outputs = model(data)
+    #通過預測結果與label運算損失值
+    loss = criterion(outputs, label)
+    #梯度歸0
+    optimizer.zero_grad()
+    #反向傳播每個梯度的損失值
+    loss.backward()
+    #更新損失值
+    optimizer.step()
+        
+#剛剛建立好的神經網路
+model = CNN()
+#定義 Loss function 
+criterion = nn.CrossEntropyLoss()
+#定義優化器(模型參數,學習率)
+optimizer = optim.adam(model.parameters(), lr=0.001)
+</code></pre>
+<p>這邊有幾個比較重要的資訊<code>optimizer.zero_grad()</code>、<code>loss.backward()</code>、<code>optimizer.step()</code>，</p>
+<p>我們知道在深度學習中需要找對最低的梯度，而我們希望每一次訓練的結果是單獨計算的，所以在訓練時常常會看到optimizer.zero_grad()來將梯度初始化，你可能會問pytorch怎麼不直接初始化呢?在訓練神經網路時，有時候希望能持續累積梯度，並通過條件控制梯度的初始化時機，這時如果pytorch把這功能寫死，那可能會導致無法得到預期的效果或是無法訓練神經網路。</p>
+<p>loss.backward()、optimizer.step()的概念就比較簡單了，通過設定的loss function做<code>反向傳播(Backpropagation)</code>計算梯度後，通過optimizer.step()將計算出來的loss值交給optimizer做運算，使loss能通過優化器更快速的下降。</p>
+<p>接下來為了讓我們知道訓練還需要多久，就可以在剛剛的程式中加入tqdm將進度條顯示出來</p>
+<pre><code>#先宣告tqdm的資料
+train = tqdm(train_loader)
+#更改剛剛的for迴圈
+for cnt,(data,label) in enumerate(train, 1):
+    #訓練
+    ...
+    #顯示放在前面的文字(通常會放這是第幾次的epoch)
+    train.set_description(str)
+    #顯示放在後面的資料(通常會是loss與acc)
+    # train.set_postfix(dict)
+</code></pre>
+<p>我們也可以在訓練當中切換訓練模式與測試模式。</p>
+<pre><code>#訓練模式
+model.train()
+#測試模式
+model.eval()
+</code></pre>
+<p>最後把acc與loss等的計算都加入到程式當中</p>
+<pre><code>epochs = 10
+    #訓練幾次
+    for epoch in range(epochs):
+        #訓練資料、loss、準確率
+        train_loss = 0
+        train_acc = 0
+        train = tqdm(train_loader)
+        #切換成訓練模式
+        model.train()
+        #開始訓練
+        for cnt,(data,label) in enumerate(train, 1):
+            #將資料放入GPU
+            data,label = data.cuda() ,label.cuda()
+            #模型預測
+            outputs = model(data)
+            #計算loss
+            loss = criterion(outputs, label)
+            #查看模型預測的結果
+            _,predict_label = torch.max(outputs, 1)
+            #梯度歸0
+            optimizer.zero_grad()
+            #反向傳播後傳給optimizer
+            loss.backward()
+            optimizer.step()
+            #計算當次epoch的loss值
+            train_loss += loss.item()
+            #計算當次epoch的acc
+            train_acc += (predict_label==label).sum()
+            #顯示
+            train.set_description(f'train Epoch {epoch}')
+            train.set_postfix({'loss':float(train_loss)/cnt,'acc': float(train_acc)/cnt})
+        #切換測試模式
+        model.eval()
+        #測試資料、acc
+        test = tqdm(test_loader)
+        test_acc = 0
+        for cnt,(data,label) in enumerate(test, 1):
+            data,label = data.cuda() ,label.cuda()
+            outputs = model(data)
+            _,predict_label = torch.max(outputs, 1)
+            test_acc += (predict_label==label).sum()
+            test.set_description(f'test Epoch {epoch}')
+            test.set_postfix({'acc': float(test_acc)/cnt})
+</code></pre>
+<p>這樣就完成一支pytorch的訓練程式了~</p>
+<h2 id="完整程式碼"><a class="header" href="#完整程式碼">完整程式碼</a></h2>
+<pre><code>import os
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+import torchvision.transforms as transforms
+import numpy as np
+from cv2 import imread
+from torch.utils.data import Dataset, DataLoader
+from tqdm import tqdm
+
+class CRFAR10(Dataset):
+    def __init__(self, path, transform):
+        self.data = []
+        for label in os.listdir(path):
+            for pic in os.listdir(path + '/' + label):
+                cv_pic = imread(f'{path}/{label}/{pic}')
+                self.data.append([cv_pic, int(label)])
+    
+    def __getitem__(self,index):
+        datas = transform(self.data[index][0])
+        labels = torch.tensor(self.data[index][1])
+        return datas, labels
+    
+    def __len__(self):
+        return len(self.data)
+        
+        
+class CNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
+        
+    #(輸入 + 2*(padding) - 捲積核) / 移動 + 1
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(x.size(0),-1)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+
+def train(train_loader,test_loader, model ,optimizer, criterion):
+    epochs = 10
+    for epoch in range(epochs):
+        train_loss = 0
+        train_acc = 0
+        train = tqdm(train_loader)
+      
+        model.train()
+        for cnt,(data,label) in enumerate(train, 1):
+            data,label = data.cuda() ,label.cuda()
+            outputs = model(data)
+            loss = criterion(outputs, label)
+            _,predict_label = torch.max(outputs, 1)
+            
+            optimizer.zero_grad()           
+            loss.backward()
+            optimizer.step()
+
+            train_loss += loss.item()
+            train_acc += (predict_label==label).sum()
+            train.set_description(f'train Epoch {epoch}')
+            train.set_postfix({'loss':float(train_loss)/cnt,'acc': float(train_acc)/cnt})
+            
+        model.eval()
+        test = tqdm(test_loader)
+        test_acc = 0
+        for cnt,(data,label) in enumerate(test, 1):
+            data,label = data.cuda() ,label.cuda()
+            outputs = model(data)
+            _,predict_label = torch.max(outputs, 1)
+            test_acc += (predict_label==label).sum()
+            test.set_description(f'test Epoch {epoch}')
+            test.set_postfix({'acc': float(test_acc)/cnt})
+
+transform = transforms.Compose([transforms.ToTensor(),
+                                transforms.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5))
+                               ])
+                               
+train_set = CRFAR10(r'pic/train/', transform)
+test_set = CRFAR10(r'pic/test/', transform)
+train_loader = DataLoader(train_set, batch_size = 128,shuffle = True, num_workers = 0)
+test_loader = DataLoader(test_set, batch_size = 128, shuffle = True, num_workers = 0)
+
+model = CNN().cuda()
+criterion = nn.CrossEntropyLoss().cuda()
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+train(train_loader, test_loader, model,optimizer,criterion)
+</code></pre>
+<p>今天是不是覺得難度突然上升了很多呢?當我們接觸到pytorch時就會發現，資料集需要學會如何使用class存放資料，建立神經網路需要了解網路構造與運算方式，訓練模型要學會如何使用優化器與損失函數找到最合適的梯度，這些都是keras中沒辦法接觸到的。</p>
+<p>今天的課程因為有點複雜，有不懂的地方一定要回去看前面的資料，這樣子才能真正了解神經網路的構造與實作方式</p>
+<p>課程中的程式碼都能從我的github專案中看到<br />
+<a href="https://github.com/AUSTIN2526/learn-AI-in-30-days">https://github.com/AUSTIN2526/learn-AI-in-30-days</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day07.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day09.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day07.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day09.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

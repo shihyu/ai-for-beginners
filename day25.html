@@ -1,0 +1,448 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 25: 【day25】手刻最簡單的神經網路-單層感知器（Single Layer Perceptron） - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day25手刻最簡單的神經網路-單層感知器single-layer-perceptron"><a class="header" href="#day25手刻最簡單的神經網路-單層感知器single-layer-perceptron">【day25】手刻最簡單的神經網路-單層感知器（Single Layer Perceptron）</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-29 17:00:26<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10300823">https://ithelp.ithome.com.tw/articles/10300823</a></p>
+</blockquote>
+<hr />
+<p>課程剩下最後的6天，我們今天要來增加你對神經網路的印象，所以今天要來手刻最簡單的神經網路<code>單層感知器（Single Layer Perceptron）</code></p>
+<h1 id="單層感知器single-layer-perceptron"><a class="header" href="#單層感知器single-layer-perceptron">單層感知器（Single Layer Perceptron）</a></h1>
+<p>你有想過什麼是最基本的神經網路嗎?答案就是單層感知器（Single Layer Perceptron）。你可以把這個技術想像成我們在課堂最一開始學習到的DNN神經網路的前身，我們看到以下這張圖片你可能就了解為什麼我這麼說了。<br />
+<img src="images/20152236IKgi03AhWi.jpg" alt="" /></p>
+<blockquote>
+<p>圖片來源:https://medium.com/nerd-for-tech/flux-prediction-using-single-layer-perceptron-and-multilayer-perceptron-cf82c1341c33</p>
+</blockquote>
+<p>這張圖片已經包含了所有單層感知器該知道的知識，不過我們還是大致上說一下單層感知器做了哪些事情。單層感知器有三的必要的參數分別就是<code>X、W、B</code>，用數學式表達這三個之間的關係就是<code>f(X) = WX+b</code>，與我們DNN的意思相同X代表輸出，W代表權重(也是我們需要訓練的參數)，B則是偏移量，單層感知器的作法就是利用WX+b的方式計算出f(x)，並以0為分界線，來判斷出最後的結果，我們用程式表達的方式如下</p>
+<pre><code>if dot(W,X) - b &gt;=0:
+    fx = 1
+else:
+    fx = 0
+</code></pre>
+<p>我們可以看到單層感知器不像DNN一樣有很多個輸出，而是只有一個輸出f(x)，並且這一個輸出只會有0與1的結果，這代表單程感知器只能對資料做二分法，超過則沒辦法判斷。</p>
+<h2 id="訓練用的參數"><a class="header" href="#訓練用的參數">訓練用的參數</a></h2>
+<p>先前我們在用pytorch訓練神經網路時，我們需要設定<code>epoch</code>、<code>learn rate</code>與還有<code>損失函數(loss function)</code>與<code>反向傳播 (Backpropagation)</code>，但我們在單層感知器並沒有反向傳播的動作，所以單層感知器是只使用<code>前向傳播 (Forwardpropagation)</code>的方式訓練出來的。</p>
+<p>我們先來快速的講解一下反向傳播是什麼。反向傳播是一種用輸出與實際值比對(loss)後重新訓練神經網路的方式，我們目前的課程中，都有使用到反向傳播的方式來訓練程式的，反倒是沒有使用過"只有"前向傳播的網路，這是因為反向傳播能夠損失函數<strong>計算</strong>目前數值與實際數值之間的誤差，最後將這個誤差<strong>更新到每一個隱藏層</strong>，優化每個隱藏層神經網路。</p>
+<p>那前向傳播是什麼呢?簡單來說就是<strong>判斷</strong>目標與實際值，如果數值太大就往下降，如果太小就往上增加，直接<strong>更新整個權重</strong>在重新做計算。</p>
+<p>這樣你了解到為什麼只有前向傳播的網路到後期沒人在使用了吧，因為後期的神經網路越來越多層，越來越混亂，如果是更新全部的權重，可能會導致每次產生的結果完全不一樣，就算條件設立的在多都無法穩定的更新。</p>
+<p>而我們今天要學習的單層感知器就是一種只有前向傳播的單的神經網路，所以我們只需要調整epoch與learn rate就可以了。</p>
+<h1 id="手刻單層感知器"><a class="header" href="#手刻單層感知器">手刻單層感知器</a></h1>
+<p>今天的目錄如下:</p>
+<ul>
+<li>1.設定數據集資料</li>
+<li>2.架構神經網路模型與功能</li>
+<li>3.使用模型與功能</li>
+</ul>
+<h2 id="設定數據集資料"><a class="header" href="#設定數據集資料">設定數據集資料</a></h2>
+<p>我們今天要來用單層感知器來實現一些邏輯閘(AND、OR)的功能，所以第一步就是設立邏輯閘的資料。</p>
+<pre><code>AND_x_train = np.array([[0,0],[0,1],[1,0],[1,1]])
+AND_y_train = np.array([0,0,0,1])
+AND_x_test = np.array([[0,1],[1,1],[0,0],[1,0]])
+
+OR_x_train = np.array([[0,0],[0,1],[1,0],[1,1]])
+OR_y_train = np.array([0,1,1,1])
+OR_x_test = np.array([[0,1],[1,1],[0,0],[1,0]])
+</code></pre>
+<h2 id="架構神經網路模型與功能"><a class="header" href="#架構神經網路模型與功能">架構神經網路模型與功能</a></h2>
+<p>接下來我們可以開始定義model內部的計算公式，剛剛提到公式是WX+b，在這裡的b指的就是向量的角度的數值，我們可以利用國中學習到的內積公式可以反推COSθ(a﹒b = |a|x|b|COSθ)，最後ACOS算出b值，在這邊我將程式碼都寫成像是keras的方式方便讓你理解</p>
+<pre><code>class Perceptron:
+    def model(self,x):
+        self.b = np.dot(self.w, x) / (np.linalg.norm(self.w) * np.linalg.norm(x))
+        self.b = math.acos(self.b)
+        
+        # W﹒X - b &gt; 0
+        return  np.dot(self.w, x) &gt;= self.b
+</code></pre>
+<p>定義好model後我們就可以用開始定義訓練方式了，在最開始說到若數值大於0輸出為1，所以我們要透過公式來降低或提高權重，而這個公式就是<code>W = W + lr*X</code>這樣就可以使用學習率的方式來更新權重</p>
+<pre><code>#隨機初始化權重
+self.w = np.random.uniform(-0.5, 0.5, X.shape[1])
+#測試是否大於0
+y_pred = self.model(x)
+#若輸出要為1但是結果&lt;0就要提高權重
+if y == 1 and not y_pred:
+    self.w += lr * x
+#若結果為0但結果&gt;0就要降低權重
+elif y == 0 and y_pred:
+    self.w -= lr * x
+統計正確的結果，方便後續計算準確率
+else:
+    acc+=1
+</code></pre>
+<p>將以上的程式加入epoch來重複訓練，並且紀錄每一個epoch的結果</p>
+<pre><code> def fit(self, X, Y, epochs = 100, lr = 0.05):
+        self.w = np.random.uniform(-0.5, 0.5, X.shape[1])
+        self.result = {'acc':[],
+                       'w':[],
+                       'b':[],
+                       'epoch':[]
+        }
+
+        for i in range(epochs):
+            acc = 0
+            for x, y in zip(X, Y):
+                y_pred = self.model(x)
+                if y == 1 and not y_pred:
+                    self.w += lr * x
+                elif y == 0 and y_pred:
+                    self.w -= lr * x
+                else:
+                    acc+=1
+                    
+            #紀錄資訊
+            self.result['epoch'].append(i)
+            self.result['acc'].append(acc/len(X))
+            self.result['w'].append(self.w)
+            self.result['b'].append(self.b)
+
+            #全部預測成功中斷程式
+            if acc / len(X) ==1:
+                break
+</code></pre>
+<p>為了觀看我們訓練的過程，我們一些資料化成圖表，一些資料用print的方式顯示出來</p>
+<pre><code>def show(self, title):
+    plt.plot(self.result['acc'])
+    plt.title(title)
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.ylim([0, 1])
+    plt.show()
+    for i in range(len(self.result['acc'])): \
+        print(f"Epoch:{self.result['epoch'][i]}\
+    Wight:{self.result['w'][i]}\
+    θ:{self.result['b'][i]}\
+    Acc:{self.result['acc'][i]}\
+    ")
+</code></pre>
+<p>最後定義一個使用模型的方式，這樣就架構好整個神經網路了。</p>
+<pre><code>def predict(self,X):
+    return [self.model(x) for x in X]
+</code></pre>
+<h2 id="使用模型與功能"><a class="header" href="#使用模型與功能">使用模型與功能</a></h2>
+<p>在這裡我們總共定義了三個方法、fit()、show、與predict()，我們先來使用fit()訓練神經網路</p>
+<pre><code>#定義model
+AND_model = Perceptron()
+OR_model =  Perceptron()
+#訓練
+AND_model.fit(AND_x_train, AND_y_train)
+OR_model.fit(OR_x_train, OR_y_train)
+</code></pre>
+<p>接下來為了知道模型訓練的效果我們將訓練的歷史紀錄都顯示出來</p>
+<pre><code>AND_model.show('AND')
+OR_model.show('OR')
+</code></pre>
+<p><img src="images/20152236nX6c8mItkp.png" alt="" /></p>
+<p>在圖片中可以看到我們的邏輯閘都被訓練完畢了，這時如果有要在使用自己的數據集就能夠用predict的方式呼叫，不需要再重新訓練了。</p>
+<pre><code>print(AND_model.predict(AND_x_test))
+print(OR_model.predict(OR_x_test))
+------------------顯示------------------
+[False, True, False, False]
+[True, True, False, True]
+</code></pre>
+<p>今天的課程中，有沒有更能幫助理解AI在python當中是如何被建造出來的，通過手刻神經網路來幫助你學習最扎實AI理論。</p>
+<h1 id="完整程式碼"><a class="header" href="#完整程式碼">完整程式碼</a></h1>
+<pre><code>import numpy as np
+import matplotlib.pyplot as plt
+import math
+
+class Perceptron:
+    def model(self, x):
+        self.b = np.dot(self.w, x) / (np.linalg.norm(self.w) * np.linalg.norm(x))
+        self.b = math.acos(self.b)
+        
+        return np.dot(self.w, x) &gt;= self.b 
+    
+    def fit(self, X, Y, epochs = 100, lr = 0.05):
+        self.w = np.random.uniform(-0.5, 0.5, X.shape[1])
+        self.result = {'acc':[],
+                       'w':[],
+                       'b':[],
+                       'epoch':[]
+        }
+
+        for i in range(epochs):
+            acc = 0
+            for x, y in zip(X, Y):
+                y_pred = self.model(x)
+                if y == 1 and not y_pred:
+                    self.w += lr * x
+                elif y == 0 and y_pred:
+                    self.w -= lr * x
+                else:
+                    acc+=1
+            self.result['epoch'].append(i)
+            self.result['acc'].append(acc/len(X))
+            self.result['w'].append(self.w)
+            self.result['b'].append(self.b)
+
+            #全部預測成功中斷程式
+            if acc / len(X) ==1:
+                break
+            
+                    
+    def show(self, title):
+        plt.plot(self.result['acc'])
+        plt.title(title)
+        plt.xlabel("Epoch")
+        plt.ylabel("Accuracy")
+        plt.ylim([0, 1])
+        plt.show()
+        for i in range(len(self.result['acc'])): \
+            print(f"Epoch:{self.result['epoch'][i]}\
+ Wight:{self.result['w'][i]}\
+ θ:{self.result['b'][i]}\
+ Acc:{self.result['acc'][i]}\
+            ")
+           
+
+    def predict(self,X):
+        return [self.model(x) for x in X]
+    
+AND_model = Perceptron()
+OR_model =  Perceptron()
+XOR_model = Perceptron()
+
+AND_x_train = np.array([[0,0],[0,1],[1,0],[1,1]])
+AND_y_train = np.array([0,0,0,1])
+AND_x_test = np.array([[0,1],[1,1],[0,0],[1,0]])
+
+OR_x_train = np.array([[0,0],[0,1],[1,0],[1,1]])
+OR_y_train = np.array([0,1,1,1])
+OR_x_test = np.array([[0,1],[1,1],[0,0],[1,0]])
+
+print(AND_model.predict(AND_x_test))
+print(OR_model.predict(OR_x_test))
+</code></pre>
+<p>課程中的程式碼都能從我的github專案中看到<br />
+<a href="https://github.com/AUSTIN2526/learn-AI-in-30-days">https://github.com/AUSTIN2526/learn-AI-in-30-days</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day24.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day26.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day24.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day26.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 26: 【day26】手刻神經網路來解決XOR問題-多層感知器 (Multilayer perceptron) (上) - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day26手刻神經網路來解決xor問題-多層感知器-multilayer-perceptron-上"><a class="header" href="#day26手刻神經網路來解決xor問題-多層感知器-multilayer-perceptron-上">【day26】手刻神經網路來解決XOR問題-多層感知器 (Multilayer perceptron) (上)</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-30 13:51:30<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10301417">https://ithelp.ithome.com.tw/articles/10301417</a></p>
+</blockquote>
+<hr />
+<h2 id="前向傳播反向傳播"><a class="header" href="#前向傳播反向傳播">前向傳播、反向傳播</a></h2>
+<p>昨天大致上提到了<code>前向傳播 (Forwardpropagation)</code>與<code>反向傳播 (Backpropagation)</code>，但因為是單層感知器所以我們沒有太深入了解，而且我去看昨天的文章發現有些部分會讓人誤會(<del>截稿前才快寫完RRRR</del>)，所以今天要來重新講解，什麼是前向傳播什麼是反向傳播。<br />
+<img src="images/20152236TJDUnnd5Dt.png" alt="" /><br />
+<strong>深度學習基本上就是在做前向傳播與反向傳播</strong>，而前向傳播的定義非常簡單，就是在圖片中紅色箭頭的部分，所謂的前向傳播算法就是，<strong>將上一層的輸出作為下一層的輸入，直到運算到輸出層為止</strong>，前向傳播的概念非常簡單，我們所有的神經網路模型都是要先進行前向傳播計算，從而計算loss值，任何在複雜的神經網路都能用以下公式來表達<code>Σσ(WnXn+b)</code>(σ是激勵函數、b是偏移量)，但昨天提到了前向傳播在單層感知器的更新方式是一次更新所有數值，所以只有前向傳播的網路效果自然會很差。</p>
+<p>所以才會有了反向傳播的方式，反向傳播是一種與<code>最佳化理論(Principle of optimality)</code>結合使用的方法，這個方法會根據所有神經網路的權重來計算損失從而更新梯度，所以我們只需要計算每一層神經網路的梯度，就能夠完成反向傳播，接下來我們看到計算方式(左側為輸入，右側為梯度公式)。<br />
+<img src="images/20152236mm0uNPbnfj.jpg" alt="" /></p>
+<p>我們知道昨天計算的單層感知器，最後的輸出結果是W1X1+W2X2+b(矩陣表示為w.t+b)，我們把他帶入到∇f公式裡面就會變成<br />
+<img src="images/20152236qXsg03jcmz.jpg" alt="" /><br />
+這時候我們就可以利用計算出來的梯度套用至梯度下降的公式裡面(<code>更新後權重 = 前一次訓練的權重 - 學習率*前一次訓練的梯度</code>)<br />
+<img src="images/20152236NRh7aXCaV8.jpg" alt="" /></p>
+<p>最後我們把整個神經網路的公式都統整起來<br />
+前向傳播:<code>y = Σσ(WnXn+b)</code><br />
+反向傳播計算梯度:<code>對所有輸入都做偏微分(含隱藏層輸入)</code><br />
+梯度下降:<code>更新後權重 = 前一次訓練的權重 - 學習率x前一次訓練的梯度</code></p>
+<p>這樣子就是所有神經網路所在做的計算了。</p>
+<h2 id="xor問題"><a class="header" href="#xor問題">XOR問題</a></h2>
+<p>如果你昨天有嘗試過OR、AND以外的邏輯閘，你會發現NXOR與XOR不管怎麼調整學習率都無法完成訓練這是因為XOR在單層感知器上是不能被實現的。</p>
+<p>我們把單層感知器視覺化，紅點代表XOR為0的數值，藍點代表為1的數值，紅線則是單層感知器，在這個例子中我們不管怎麼畫線都無法將紅點與藍點分開。<br />
+<img src="images/20152236loXsXFn0c7.jpg" alt="" /></p>
+<p>那我們該如何把紅藍點分開呢?答案很簡單就是畫兩條線就可以了<br />
+<img src="images/20152236267R3xT8eB.jpg" alt="" /></p>
+<p>也就是我們要將只有單層的神經網路，多增加一層神經網路也就是下圖的形式，這種網路架構就稱之為<code>多層感知機(Multilayer perceptron)</code>簡稱MLP。<br />
+<img src="images/20152236F8WLOgHtHE.jpg" alt="" /></p>
+<p>我們可以注意到一件事情，這與我們在<a href="https://ithelp.ithome.com.tw/articles/10288343">【day3】來辨識圖像-深度神經網路(Deep Neural Network)</a>學習到的DNN是不是很像呢?因為MLP其實與DNN是一樣的，差別在於中間的隱藏層數量不同，通常DNN是指隱藏層數量大於2層的神經網路(畢竟叫做Deep Neural Network)，若只有一層我們通常就會叫他MLP，不過你把DNN與MLP混在一起大家還是會知道你在說什麼。</p>
+<p>今天我們就先說到這裡好了，昨天接觸到了一些新程式所以今天只講解理論。明天我們要來講解如何手刻出MLP的神經網路，我們會一次比對兩種寫法分別是通過pytorch來快速的計算梯度與反向傳播，另一種則是手刻公式來計算梯度與反向傳播的方式。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day25.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day27.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day25.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day27.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 29: 【day29 】蒐集資料與訓練模型時會發生的常見問題 &amp; 解決方式 - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day29-蒐集資料與訓練模型時會發生的常見問題--解決方式"><a class="header" href="#day29-蒐集資料與訓練模型時會發生的常見問題--解決方式">【day29 】蒐集資料與訓練模型時會發生的常見問題 &amp; 解決方式</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-10-03 20:27:37<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10303380">https://ithelp.ithome.com.tw/articles/10303380</a></p>
+</blockquote>
+<hr />
+<p>今天是課程倒數第二天，我相信你在學習的過程中產生了很多的疑問，所以今天我要來統整在訓練時常見的問題與解決方式。但注意這些回答<strong>都是參考解答不一定是最佳解</strong>，因為在深度學習的技術中，我們沒有經過實驗是不會知道結果的。</p>
+<h2 id="loss值相關問題"><a class="header" href="#loss值相關問題">loss值相關問題</a></h2>
+<p>Q1:train loss與test loss趨近不變<br />
+A1:這通常代表神經網路學習完畢，若準確率不足可以嘗試更換神經網路架構。</p>
+<p>Q2:為什麼train loss與test loss不管怎麼樣訓練都會非常的高，但卻會穩定下降<br />
+A2:通常這種情況會發生在回歸任務，最主要是因為資料沒有縮放到0~1之間導致loss值很高。</p>
+<p>Q3:train loss 下降，test卻不會變動了該怎麼辦?<br />
+A3:神經網路已經overfitting了，若準確率足夠應該要做Early stopping的動作，若不足應該降低學習率或增加神經網路的深度來解決這個問題</p>
+<p>Q4:train loss下降(不變)，test卻上升了這是怎麼回事?<br />
+A4:通常不會遇到這些種狀況，當你遇到這種情況最大的可能性就是<strong>資料集有問題</strong>(亂數資料)，可以試試將資料前處理後再放入神經網路訓練，看問題能否被改善</p>
+<p>Q5:train loss不斷上升，test loss不斷上升<br />
+A5:會產生這問題的主要原因是<strong>神經網路無法有效學習到資料的特徵</strong>，通常遇到此情況只要降低學習率就會有不錯的結果。</p>
+<h2 id="模型相關問題"><a class="header" href="#模型相關問題">模型相關問題</a></h2>
+<p>Q1:神經網路的各層參數該選擇多少?<br />
+A1:一般會以2的倍數去建立參數，若是圖片的部分(CNN)會有2n+1來設定，但還是要經過實驗才能知道最好的結果。</p>
+<p>Q2:每層該選用那些激勵函數?<br />
+A2:通常在RNN神經網路中會選用tanh當作激勵函數(在RNN中比較重要的是資料分布狀態而不是特徵)，在CNN中會選用relu(與RNN相反比較需要知道特徵而不是分布)，回歸任務會選擇liner(為了能夠貼近實際值)，多分類任務會選擇softmax(softmax會回傳位子訊息及各機率很適合多分類)，二分類任務會選用sigmoid(數值會在0~1之間可以使用0.5作為分界線)。</p>
+<p>Q3:損失函數該怎麼選擇?<br />
+A3:在回歸任務中若覺得異常資料不重要會選擇MAE，不重要則會選擇MSE，而在分類任務中多分類任務會選擇Categorical Crossentropy，二分法會選擇Binary Crossentropy</p>
+<p>Q4:優化器該怎麼選擇?<br />
+A4:最通用的優化器我認為是adam，但若有無法收斂的問題可以試試用SGD<a href="https://medium.com/ai-blog-tw/deep-learning-%E7%82%BA%E4%BB%80%E9%BA%BCadam%E5%B8%B8%E5%B8%B8%E6%89%93%E4%B8%8D%E9%81%8Esgd-%E7%99%A5%E7%B5%90%E9%BB%9E%E8%88%87%E6%94%B9%E5%96%84%E6%96%B9%E6%A1%88-fd514176f805">詳細內容可以看這裡</a></p>
+<p>Q5:學習率多少才適合?<br />
+A5:沒有特定的答案，通常我會使用1e-4來測試結果，若遇見問題再調整(可以觀看loss相關問題)</p>
+<h2 id="資料前處理相關問題"><a class="header" href="#資料前處理相關問題">資料前處理相關問題</a></h2>
+<p>Q1:為何要將圖像灰階化<br />
+A1:因為灰階化能夠移除掉影像中的部分亮點，還能夠加速程式運算速度</p>
+<p>Q2:圖片有雜訊、光影差距大該怎麼辦?<br />
+A2:可以使用一些濾波器(中值濾波器、平均濾波器、高斯濾波器...等)，來增強影像品質</p>
+<p>Q3:有些圖片是斜的，但我需要這些數據可是會影響到準確率，該怎麼做?<br />
+A3:可以使用透視變換(Perspective Transformation)的方式將圖片轉正</p>
+<p>Q4:什麼時候該降維資料?<br />
+A4:當資料維度太高、資料較混亂、需快速計算時都能夠使用</p>
+<p>Q5:為何要資料標準化(縮放到0~1之間)，可以不要嗎?<br />
+A5:資料標準化是為了使梯度能夠快速且正常的下降，若沒有標準化loss值的差距就會過高，這樣不僅會影響準確率，還會增加訓練時間。</p>
+<p>Q6:為何要做資料清洗(Data Cleansing)<br />
+A6:在訓練神經網路時我們需要去計算出每個結果的權重，若放入的資料是較混亂的，那計算上肯定會發生問題。</p>
+<p>Q7:做NLP任務時該把符號刪除嗎?<br />
+A7:應該要刪除一些大量重複出現的符號(逗號、分號、引號)，留下一些能表達語氣的符號(驚嘆號、問號)</p>
+<p>Q8:該刪除停用語嗎?<br />
+A8:這要看模型的架構才能夠決定，基本上無法解決多義詞的模型都應該刪除停用語</p>
+<p>Q9:為何在做文字前處理時是將文字轉換成小寫而不是大寫<br />
+A9:這其實沒有什麼差，只是大寫符號通常在程式代表的是參數</p>
+<h2 id="pytorch爬蟲常見問題"><a class="header" href="#pytorch爬蟲常見問題">Pytorch、爬蟲常見問題</a></h2>
+<p>Q1:為何我訓練的速度會越來越慢<br />
+A1:通常是因為CPU或GPU的散熱問題導致效能越來越差</p>
+<p>Q2:在pytorch訓練中為什麼會跑到一半才會提示無法在將資料放入GPU中了<br />
+A2:這是因為放入GPU的時機不對，通常出現這個問題是因為在dataset建立時就放入GPU中了，這導致python認為你還需要這些變數因此無法正常釋放GPU空間(python會自動釋放無用變數)</p>
+<p>Q3:為什麼我在網頁上能看到我想要爬的資料，但程式內看不到?<br />
+A3:因為網站是採用AJAX的方式來取的資料的，所以我們該請求的網址應該是AJAX的網址。</p>
+<p>Q4:selenium是一種動態爬蟲的方式可以簡易的寫出爬蟲程式為何大家都不用?<br />
+A4:最主要的原因還是因為selenium太緩慢了，我們使用requests的爬蟲方式只須對單一AJAX網址發送請求，但selenium卻是模仿瀏覽器的動作一次性的請求過多無用資料。</p>
+<p>Q5:request該如何操作網頁上的物件?<br />
+A5:通常我們可以觀察網址中的參數來做一些基礎操作，但有些較複雜的動作(例如登入)就必須採用cookie的方式才能夠操作物件。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day28.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day30.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day28.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day30.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

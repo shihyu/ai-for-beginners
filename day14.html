@@ -1,0 +1,380 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 14: 【day14】預測Hololive七期生的樣貌-生成式對抗網路(Generative Adversarial Network)(上) - 新手也能懂得AI-深入淺出的AI課程</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="2022 iThome 鐵人賽 - AI &amp; Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">新手也能懂得AI-深入淺出的AI課程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://ithelp.ithome.com.tw/users/20152236/ironman/5607" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-globe"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day14預測hololive七期生的樣貌-生成式對抗網路generative-adversarial-network上"><a class="header" href="#day14預測hololive七期生的樣貌-生成式對抗網路generative-adversarial-network上">【day14】預測Hololive七期生的樣貌-生成式對抗網路(Generative Adversarial Network)(上)</a></h1>
+<blockquote>
+<p><strong>發布日期:</strong> 2022-09-18 12:52:50<br />
+<strong>原文連結:</strong> <a href="https://ithelp.ithome.com.tw/articles/10292214">https://ithelp.ithome.com.tw/articles/10292214</a></p>
+</blockquote>
+<hr />
+<h2 id="生成式對抗網路generative-adversarial-network"><a class="header" href="#生成式對抗網路generative-adversarial-network">生成式對抗網路(Generative Adversarial Network)</a></h2>
+<p>GAN是一種使用深度學習的模型，GAN在訓練中所做的事情非常簡單，就是利用<code>判別器(Discriminator)</code>來判別<code>生成器(Generator)</code>所創建的圖片，我們舉一個簡單的例子來說明。</p>
+<p>假設今天有一個手藝不好卻想要製作假抄(圖片)的人A(生成器)，與一個負責抓捕他的警察B(判別器)，那最一開始的結果肯定是A一直被B抓到，可是每次A都在被抓的時候能學到一些經驗，並更換一些方法，於是B開始越來越分辨不出來A所製作出來的鈔票是真還是假的，甚至到最後完全分辨不出來，那麼A所製作的鈔票就是一個完美的結果(生成圖片)</p>
+<p>簡單來說GAN的概念就是<code>道高一尺，魔高一丈</code>，利用這種方是我們可以產生一些非常厲害的圖像，換臉、自動修圖、畫風轉移，AI畫畫與許許多多的IG抖音濾鏡，都是一種GAN技術在生活中能看見的技術。</p>
+<h2 id="資料蒐集"><a class="header" href="#資料蒐集">資料蒐集</a></h2>
+<p>還記得我們在<a href="https://ithelp.ithome.com.tw/articles/10288835">【day5】爬蟲與股票預測-長短期記憶模型(Long short-term memory) (上)</a>時介紹的爬蟲嗎?今天我們要使用的就是較困難的requests。</p>
+<ul>
+<li>1.AJAX介紹</li>
+<li>2.requests分析pixiv網站</li>
+<li>3.建立瀏覽器環境</li>
+<li>4.迴圈取得網站資料</li>
+<li>5.整理資料並存檔</li>
+</ul>
+<h2 id="ajaxasynchronous-javascript-and-xml介紹"><a class="header" href="#ajaxasynchronous-javascript-and-xml介紹">AJAX(Asynchronous JavaScript and XML)介紹</a></h2>
+<p>在傳統的網頁中，我們每次向伺服器請求資料時，伺服器會接收並處理傳來的請求，然後送回傳一個結果，但這個做法浪費了許多資源，因為請求與迴傳所看到的網站資訊大致上都相同，每次的請求都需要與伺服器之間做溝通，這會導致伺服器需要處理大量的資訊，導致使用者的網站常常卡住。而AJAX這個技術能夠只將必要的資訊送出，並回傳必要的資料，使我們只接收少量的資源達成相同的效果，那我們在網站中會看到那些AJAX的技術呢?我相信許多人每天都會用到只是不知道而已，這邊我舉幾個例子:youtube的影片清單網下滾動會更新，IG往下滾動會刷新資料，YT影片結束後會自動轉跳。這種在網站上發送請求後更改一小部分的技術基本上都是使用AJAX來達成的。</p>
+<h2 id="requests分析pixiv網站"><a class="header" href="#requests分析pixiv網站">requests分析pixiv網站</a></h2>
+<p>首先我們為了要預測hololive的未來成員，可以使用到現有成員圖片來推測未來的風格，但官方的圖片又非常的少，於是我將目標放在二創的圖片上，也就是其他繪師的創作。</p>
+<p>我們先前往pixiv搜尋hololive，這時候可以看到這個網址</p>
+<pre><code>https://www.pixiv.net/tags/hololive
+</code></pre>
+<p>但當我們對這個網站發送請求時，會發現找不到想要的資料，pixiv中圖片都是動態請求的資料，所以我們只能取得一些靜態的資料</p>
+<pre><code>r = requests.get(url)
+</code></pre>
+<p><img src="images/20152236jhU0FogypK.jpg" alt="" /></p>
+<p>那該怎麼取得動態的資料呢?我們需要去偽造一個AJAX的請求方式</p>
+<p>首先我們先按下F12到NetWork的地方<br />
+<img src="images/201522362ffaqYdFFu.jpg" alt="" /></p>
+<p>接下來在pixiv中點擊插畫<br />
+<img src="images/20152236q1XMb4GvTj.jpg" alt="" /></p>
+<p>這時候就會看到NetWork中多出了許多資料，這些資料就是瀏覽器對網站使用的AJAX請求的方式<br />
+<img src="images/20152236xmi9fCLroU.jpg" alt="" /></p>
+<p>所以我們只需要找到網站是使用了哪一個方式，來顯示我們看到的頁面，這樣就能找到我們要的資料。我們可以考慮網站動作的優先順序，想一下如果是要請求資料，那這個動作會放在哪裡?當然是請求的前幾筆!所以要找到的請求動作應該會靠在蠻前面的地方，我們可以點擊到paylod的地方觀察這些資料。<br />
+<img src="images/20152236MLFFaHPjfs.jpg" alt="" /><br />
+這時候會看到我們關鍵字"hololive"，並且在其他的請求中沒有這個字，那就大致上確定是這個網址了</p>
+<p>之後將頁面切換到headers來取得AJAX的URL，與請求的cookies(若沒有只能請求10頁)<br />
+<img src="images/20152236VJV5Cte01K.jpg" alt="" /></p>
+<p>在網址中可以看到幾個參數word、order、mode、s_mode、type、lang，在這邊我只看得懂word、type、lang這三個參數，所以我決定去找到其他標籤與分類的網址</p>
+<pre><code>https://www.pixiv.net/ajax/search/illustrations/hololive?word=hololive&amp;order=date_d&amp;mode=all&amp;p=1&amp;s_mode=s_tag_full&amp;type=illust_and_ugoira&amp;lang=zh_tw
+https://www.pixiv.net/ajax/search/manga/ONEPIECE?word=ONEPIECE&amp;order=date_d&amp;mode=all&amp;p=1&amp;s_mode=s_tag_full&amp;type=manga&amp;lang=zh_tw
+</code></pre>
+<p>查看到變動的地方我們可以知道這個網址的參數涵義如下，接下來就能通過網址來操作了。</p>
+<pre><code>https://www.pixiv.net/ajax/search/{類型}/{搜尋名稱}?word={搜尋名稱}&amp;order=date_d&amp;mode=all&amp;p={頁數}&amp;s_mode=s_tag_full&amp;type=illust_and_ugoira&amp;lang={語系}
+</code></pre>
+<p>我們來看看我們用requests.get(AJAX_url)的結果，並通過JSON格式化工具來查看一下結構<br />
+<img src="images/20152236Cd1nGyH3OL.jpg" alt="" /></p>
+<p>可以看到作品的名稱、圖片網址、ID、上傳時間都在body -&gt; illust的data裡面，所以我們只需要利用pythno保留這部分的資訊即可</p>
+<pre><code>datas = json.loads(r.text)["body"]["illust"]["data"]
+</code></pre>
+<p>最後把程式加入迴圈之中這樣就能換頁並獲取資訊了</p>
+<pre><code>headers = {'Referer':'https://www.pixiv.net/'}
+#初始頁
+i = 1
+while(1):
+    #AJAX url
+    holo_url = f'https://www.pixiv.net/ajax/search/illustrations/hololive?word=hololive&amp;order=date_d&amp;mode=all&amp;p={i}&amp;s_mode=s_tag_full&amp;type=illust_and_ugoira&amp;lang=zh_tw'
+    r = requests.get(holo_url)
+    # 狀態錯誤跳脫迴圈
+    if r.status_code != 200:
+        break
+        
+    #保留頁面資訊
+    datas = json.loads(r.text)["body"]["illust"]["data"]
+    for data in datas:
+        #找到作品名稱
+        name = data["alt"]
+        #找到作品ID
+        pic_id = data["id"]
+</code></pre>
+<h2 id="保存圖片"><a class="header" href="#保存圖片">保存圖片</a></h2>
+<p>我們剛剛取的到的資訊只有作品名稱與ID，那該如何找到圖片呢?首先先點進隨便一個圖片裡面，對圖片按右鍵-&gt;新分頁中開啟圖片應該會獲得</p>
+<pre><code>https://i.pximg.net/c/250x250_80_a2/img-master/img/2021/10/21/00/00/07/93576944_p0_square1200.jpg
+</code></pre>
+<p>不過怎麼點擊上面的網址都只會顯示403 error，因為我們在發送請求的資料沒有附帶網站的網域。我們知道pixiv的網址是https://www.pixiv.net/ ，但是我們找到的URL卻是https://i.pximg.net/ ，這代表網站需要標頭參數referer，所以我們需要加入pixiv的網址來解決這個問題</p>
+<pre><code>headers = {'Referer':'https://www.pixiv.net/'}
+request.get(AJAXurl,headers=headers)
+</code></pre>
+<p>接下來為了能加入程式到迴圈之中，我們需要分析網址，我們可以得到以下的結果</p>
+<pre><code>https://i.pximg.net/img-master/img/{年}/{月}/{日}/{時}/{分}/{秒}(作品上傳日期)/{作品ID}_p{第幾張圖片}_master1200.jpg
+</code></pre>
+<p>所以我們只要將前面的作品ID與時間加入到我們的第二個網址中就能取得我們圖片的資訊，不過在日期中，包含了許多-、t、+、:等不需要的文字，所以先來處理一下格式問題，之後將網址組合起來就可以了。</p>
+<pre><code>def makeUrl(pic_id,creat_time,j):
+    creat_time=creat_time.replace("-",' ')
+    creat_time=creat_time.replace("T",' ')
+    creat_time=creat_time.replace(":",' ')
+    creat_time=creat_time.replace("+",' ')
+    creat_time =creat_time.split(' ')
+    url =  f"https://i.pximg.net/img-master/img/{creat_time[0]}/{creat_time[1]}/{creat_time[2]}/{creat_time[3]}/{creat_time[4]}/{creat_time[5]}/{pic_id}_p{j}_master1200.jpg"
+    return url
+</code></pre>
+<p>接下來我們重新用requests.get得到圖片內容，之後用write的方式就能將圖片保存下來了</p>
+<pre><code>url = makeUrl(pic_id, creat_time, j)
+r = requests.get(url, headers=headers)
+if r.status_code != 200:
+    break     
+with open(f'./holo/{pic_id}_{j}.jpg','wb') as f:
+    f.write(r.content)
+</code></pre>
+<p>最後我們加入一些換頁的動作</p>
+<h2 id="完整程式碼"><a class="header" href="#完整程式碼">完整程式碼</a></h2>
+<pre><code>import json
+import requests
+
+def makeUrl(pic_id,creat_time,j):
+    creat_time=creat_time.replace("-",' ')
+    creat_time=creat_time.replace("T",' ')
+    creat_time=creat_time.replace(":",' ')
+    creat_time=creat_time.replace("+",' ')
+    creat_time =creat_time.split(' ')
+    url =  f"https://i.pximg.net/img-master/img/{creat_time[0]}/{creat_time[1]}/{creat_time[2]}/{creat_time[3]}/{creat_time[4]}/{creat_time[5]}/{pic_id}_p{j}_master1200.jpg"
+    return url
+headers = {'Referer':'https://www.pixiv.net/'}
+i = 1
+while(1):    
+    holo_url = f'https://www.pixiv.net/ajax/search/illustrations/hololive?word=hololive&amp;order=date_d&amp;mode=all&amp;p={i}&amp;s_mode=s_tag_full&amp;type=illust_and_ugoira&amp;lang=zh_tw'
+    r = requests.get(holo_url)
+    
+    if r.status_code != 200:
+        break
+        
+    datas = json.loads(r.text)["body"]["illust"]["data"]
+    for data in datas:
+        name = data["alt"]
+        pic_id = data["id"]
+        creat_time = data["createDate"]
+        print(name)
+        j = 0
+        while(1):
+            url = makeUrl(pic_id, creat_time, j)
+            r = requests.get(url, headers=headers)
+            if r.status_code != 200:
+                break     
+            with open(f'./holo/{pic_id}_{j}.jpg','wb') as f:
+                f.write(r.content)
+            j+=1
+
+    i+=1
+</code></pre>
+<p>明天來建構一個gan神經網路，來測試看看效果吧</p>
+<p>課程中的程式碼都能從我的github專案中看到<br />
+<a href="https://github.com/AUSTIN2526/learn-AI-in-30-days">https://github.com/AUSTIN2526/learn-AI-in-30-days</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day13.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day15.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day13.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day15.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
