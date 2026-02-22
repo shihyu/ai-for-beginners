@@ -1,0 +1,22 @@
+[book]
+title = "新手也能懂得AI-深入淺出的AI課程"
+authors = ["austin70915"]
+description = "2022 iThome 鐵人賽 - AI & Data 組 - 從 Python 基礎到 DNN/CNN/LSTM/預訓練模型的完整 AI 入門課程"
+language = "zh-TW"
+multilingual = false
+src = "src"
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+git-repository-url = "https://ithelp.ithome.com.tw/users/20152236/ironman/5607"
+git-repository-icon = "fa-globe"
+no-section-label = false
+additional-css = ["custom.css"]
+
+[output.html.fold]
+enable = true
+level = 0
+
+[output.html.playground]
+editable = false

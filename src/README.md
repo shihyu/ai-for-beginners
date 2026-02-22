@@ -1,0 +1,46 @@
+# 新手也能懂得AI-深入淺出的AI課程
+
+> **2022 iThome 鐵人賽** | AI & Data 組 | 作者: [austin70915](https://ithelp.ithome.com.tw/users/20152236)
+>
+> 原始系列: <https://ithelp.ithome.com.tw/users/20152236/ironman/5607>
+
+## 簡介
+
+讓沒接觸過 Python 的人也能了解 AI 內部的構造與內容。
+
+從基礎的安裝程式、安裝函式庫、基礎語法，
+到 DNN、CNN、LSTM 等神經網路架構與資料前處理的技術，
+最後是預訓練模型的介紹 (NLP 與 CV 兩個方向)。
+
+## 課程大綱
+
+- **Day 01**: [【day1】python&函式庫 安裝與介紹](day01.md)
+- **Day 02**: [【day2】python基礎語法](day02.md)
+- **Day 03**: [【day3】來辨識圖像-深度神經網路(Deep Neural Network)](day03.md)
+- **Day 04**: [【day4】找到圖片的特徵-捲積神經網路(Convolutional neural network)](day04.md)
+- **Day 05**: [【day5】爬蟲與股票預測-長短期記憶模型(Long short-term memory) (上)](day05.md)
+- **Day 06**: [【day6】爬蟲與股票預測-長短期記憶模型(Long short-term memory) (下)](day06.md)
+- **Day 07**: [【day7】解析gz檔案 & 使用Pytorch做CIFAR10影像辨識 (上)](day07.md)
+- **Day 08**: [【day8】解析gz檔案 & 使用Pytorch做CIFAR10影像辨識 (下)](day08.md)
+- **Day 09**: [【day9】 讓電腦了解文字資料 & 使用Pytorch做IMDB影評分析](day09.md)
+- **Day 10**: [【day10】人工智慧、機器學習、深度學習究竟差異在哪裡?](day10.md)
+- **Day 11**: [【day11】集成式學習 & 使用xgboost過濾垃圾郵件](day11.md)
+- **Day 12**: [【day12】預訓練模型訓練 & 應用- 使用OpenCV製作人臉辨識點名系統 (上)](day12.md)
+- **Day 13**: [【day13】預訓練模型訓練 & 應用- 使用OpenCV製作人臉辨識點名系統 (下)](day13.md)
+- **Day 14**: [【day14】預測Hololive七期生的樣貌-生成式對抗網路(Generative Adversarial Network)(上)](day14.md)
+- **Day 15**: [【day15】預測Hololive七期生的樣貌-生成式對抗網路(Generative Adversarial Network)(下)](day15.md)
+- **Day 16**: [【day16】NLP的首選模型Transformer介紹](day16.md)
+- **Day 17**: [【day17】假消息辨識-BERT(Bidirectional Encoder Representations from Transformers)(上)](day17.md)
+- **Day 18**: [【day18】假消息辨識-BERT(Bidirectional Encoder Representations from Transformers)(下)](day18.md)
+- **Day 19**: [【day19】找到文章的重點-T5( Text-To-Text Transfer Transformer)(上)](day19.md)
+- **Day 20**: [【day20】找到文章的重點-T5( Text-To-Text Transfer Transformer)(下)](day20.md)
+- **Day 21**: [【day21】分群?分類?傻傻分不清楚-分群演算法介紹](day21.md)
+- **Day 22**: [【day22】對Google評論自動分群-HDBSCAN與Sentence-BERT(上)](day22.md)
+- **Day 23**: [【day23】對Google評論自動分群-HDBSCAN與Sentence-BERT(下)](day23.md)
+- **Day 24**: [【day24】加快程式的運算速度-學習常見的降維演算法](day24.md)
+- **Day 25**: [【day25】手刻最簡單的神經網路-單層感知器（Single Layer Perceptron）](day25.md)
+- **Day 26**: [【day26】手刻神經網路來解決XOR問題-多層感知器 (Multilayer perceptron) (上)](day26.md)
+- **Day 27**: [【day27】手刻神經網路來解決XOR問題-多層感知器 (Multilayer perceptron) (下)](day27.md)
+- **Day 28**: [【day28】不要再用準確率(Accuracy)評估分類模型了!-混淆矩陣(Confusion Matrix)與評估指標](day28.md)
+- **Day 29**: [【day29 】蒐集資料與訓練模型時會發生的常見問題 & 解決方式](day29.md)
+- **Day 30**: [【day30】路途還很遙遠只有良好的基礎才能走向更遠的路-30天的技術總結與心得](day30.md)
